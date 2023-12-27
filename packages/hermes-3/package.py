@@ -21,8 +21,6 @@ class Hermes3(CMakePackage):
     license("GPL-3.0-or-later")
 
     version("master", branch="master")
-    version("1.1.0", sha256="64eca33471c11bc827534f209ec60a1ed2f403e1859ca0c7fe27b77382b1ee4f")
-    version("1.0.0", sha256="3128efea6ae9654c0545cea1292c96bc89fd84a4d6c8ca1b6c55a43218bb2b53")
 
     variant("petsc", default=False, description="Enable PETSc solvers")
     variant(
