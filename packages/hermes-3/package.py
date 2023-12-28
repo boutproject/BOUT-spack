@@ -20,7 +20,10 @@ class Hermes3(CMakePackage):
 
     license("GPL-3.0-or-later")
 
+    # Note: Release tarballs don't include BOUT++ submodule
+    #       so for releases specify the commit hash
     version("master", branch="master")
+    version("1.2.0", commit="081c8cf")
 
     variant("petsc", default=False, description="Enable PETSc solvers")
     variant(
