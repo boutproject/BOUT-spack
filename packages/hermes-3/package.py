@@ -23,6 +23,7 @@ class Hermes3(CMakePackage):
     # Note: Release tarballs don't include BOUT++ submodule
     #       so for releases specify the commit hash
     version("master", branch="master")
+    version("1.3.0", commit="5be1525")
     version("1.2.1", commit="f1dadcc")
     version("1.2.0", commit="081c8cf")
 
