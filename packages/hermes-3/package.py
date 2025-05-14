@@ -21,6 +21,9 @@ class Hermes3(CMakePackage):
 
     license("GPL-3.0-or-later")
 
+    # A 'working' version for use with the develop option in spack envs
+    version("working", branch="master")
+
     # Note: Release tarballs don't include BOUT++ submodule
     #       so for releases specify the commit hash
     version("master", branch="master")
