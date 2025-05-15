@@ -14,8 +14,7 @@ class Hermes3(CMakePackage):
     coordinates."""
 
     homepage = "https://hermes3.readthedocs.io/"
-    # url = "https://github.com/bendudson/hermes-3/archive/refs/tags/v1.1.0.tar.gz"
-    git = "https://github.com/bendudson/hermes-3.git"
+    git = "https://github.com/boutproject/hermes-3.git"
 
     maintainers("bendudson")
 
