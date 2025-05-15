@@ -58,7 +58,5 @@ class PyXbout(PythonPackage):
     depends_on("py-xarray@2023.01.0:", type=("build", "run"))
 
     def config_settings(self, spec, prefix):
-        # FIXME: Add configuration settings to be passed to the build backend
-        # FIXME: If not needed, delete this function
         settings = {}
         return settings
