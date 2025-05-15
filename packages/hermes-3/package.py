@@ -14,7 +14,7 @@ class Hermes3(CMakePackage):
     coordinates."""
 
     homepage = "https://hermes3.readthedocs.io/"
-    url = "https://github.com/bendudson/hermes-3/archive/refs/tags/v1.1.0.tar.gz"
+    # url = "https://github.com/bendudson/hermes-3/archive/refs/tags/v1.1.0.tar.gz"
     git = "https://github.com/bendudson/hermes-3.git"
 
     maintainers("bendudson")
@@ -24,12 +24,10 @@ class Hermes3(CMakePackage):
     # A 'working' version for use with the develop option in spack envs
     version("working", branch="master")
 
-    # Note: Release tarballs don't include BOUT++ submodule
-    #       so for releases specify the commit hash
-    version("master", branch="master")
-    version("1.3.0", commit="5be1525")
-    version("1.2.1", commit="f1dadcc")
-    version("1.2.0", commit="081c8cf")
+    version("master", branch="master", submodules=True, preferred=True)
+    version("1.3.0", tag="v1.3.0", submodules=True)
+    version("1.2.1", tag="v1.2.1", submodules=True)
+    version("1.2.0", tag="v1.2.0", submodules=True)
 
     variant(
         "limiter",
