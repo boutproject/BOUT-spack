@@ -38,9 +38,6 @@ class Hermes3(CMakePackage):
         multi=False,
     )
     variant("petsc", default=False, description="Builds with PETSc support.")
-    # variant where SUNDIALS is downloaded by BOUT
-    variant("bout-sundials", default=False, description="Builds with SUNDIALS support, SUNDIALS downloaded by BOUT++.")
-    # variant where SUNDIALS comes from spack
     variant("sundials", default=True, description="Builds with SUNDIALS support.")
     variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
@@ -62,15 +59,11 @@ class Hermes3(CMakePackage):
         "petsc+hypre+mpi~debug~fortran", when="+petsc", type=("build", "link", "run")
     )
     depends_on("py-xhermes", when="+xhermes", type=("build", "link", "run"))
-    # SUNDIALS spack dependency
     depends_on("sundials", when="+sundials", type=("build", "link", "run"))
-    # or instead, download SUNDIALS via the
-    # BOUT cmake flag (see binary_def_variants, below)
 
     def cmake_args(self):
         # ON/OFF definitions controlled by variants
         binary_def_variants = {
-            "BOUT_DOWNLOAD_SUNDIALS": "bout-sundials",
             "HERMES_SLOPE_LIMITER": "limiter",
             "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_SUNDIALS": "sundials",
