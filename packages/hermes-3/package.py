@@ -59,15 +59,25 @@ class Hermes3(CMakePackage):
         "petsc+hypre+mpi~debug~fortran", when="+petsc", type=("build", "link", "run")
     )
     depends_on("py-xhermes", when="+xhermes", type=("build", "link", "run"))
+
     # Could add Sundials as a spack dependency here?
-    # Download it via the BOUT cmake flag for now
+    # Download it via the BOUT cmake flag for now (see binary_def_variants, below)
     # depends_on("sundials", when="+sundials", type=("build", "link", "run"))
 
     def cmake_args(self):
-        # Always build with Sundials.
-        # Use variants to toggle other config options.
-        return [
-            self.define("BOUT_DOWNLOAD_SUNDIALS", True),
-            self.define_from_variant("BOUT_USE_PETSC", "petsc"),
-            self.define_from_variant("HERMES_SLOPE_LIMITER", "limiter"),
+        # ON/OFF definitions controlled by variants
+        binary_def_variants = {
+            "BOUT_DOWNLOAD_SUNDIALS": "sundials",
+            "HERMES_SLOPE_LIMITER": "limiter",
+            "BOUT_USE_PETSC": "petsc",
+        }
+        variants_args = [
+            self.define_from_variant(def_str, var_str)
+            for def_str, var_str in binary_def_variants.items()
         ]
+
+        # Concatenate different arg types and return
+        args = []
+        args.extend(variants_args)
+
+        return args
