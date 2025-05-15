@@ -8,7 +8,8 @@ class PyXhermes(PythonPackage):
     url = "https://github.com/boutproject/xhermes"
     git = "https://github.com/boutproject/xhermes"
 
-    # maintainers = ["Mike Kryjak"]
+    # Set a maintainer if submitting this package to the spack repo
+    # maintainers("github_user1", "github_user2")
 
     version("main", branch="main", no_cache=True)
 
