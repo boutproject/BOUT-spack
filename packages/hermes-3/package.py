@@ -48,10 +48,6 @@ class Hermes3(CMakePackage):
     depends_on("fftw", type=("build", "link", "run"))
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("netcdf-cxx4", type=("build", "link", "run"))
-    # Should these be xhermes deps instead?
-    depends_on("py-cython", type=("build", "link", "run"))
-    depends_on("py-jinja2", type=("build", "link", "run"))
-    depends_on("py-netcdf4", type=("build", "link", "run"))
 
     # Variant-controlled dependencies
     depends_on(
