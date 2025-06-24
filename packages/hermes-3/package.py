@@ -62,6 +62,10 @@ class Hermes3(CMakePackage):
             "HERMES_SLOPE_LIMITER": "limiter",
             "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_SUNDIALS": "sundials",
+            # There are problems with how CMake finds the
+            # glibc/standalone versions of gettext. See
+            # https://github.com/boutproject/hermes-3/issues/356#issuecomment-2999715879
+            "BOUT_USE_NLS": "OFF",
         }
         variants_args = [
             self.define_from_variant(def_str, var_str)
