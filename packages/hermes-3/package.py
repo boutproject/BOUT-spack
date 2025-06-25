@@ -71,5 +71,9 @@ class Hermes3(CMakePackage):
         # Concatenate different arg types and return
         args = []
         args.extend(variants_args)
+        # There are problems with how CMake finds the
+        # glibc/standalone versions of gettext. See
+        # https://github.com/boutproject/hermes-3/issues/356#issuecomment-2999715879
+        args.append(self.define("BOUT_USE_NLS", False))
 
         return args
