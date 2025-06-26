@@ -39,6 +39,7 @@ class Hermes3(CMakePackage):
     variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
+    variant("reactions", default=False, description="Build Hermes-3 with Reactions suppport.")
 
     # Always-required dependencies
     # depends_on("adios2", type=("build", "link"))
@@ -55,6 +56,7 @@ class Hermes3(CMakePackage):
     )
     depends_on("py-xhermes", when="+xhermes", type=("run"))
     depends_on("sundials", when="+sundials", type=("build", "link"))
+    depends_on("reactions", when="+reactions", type=("build", "link"))
 
     def cmake_args(self):
         # ON/OFF definitions controlled by variants
