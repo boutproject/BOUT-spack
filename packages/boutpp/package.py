@@ -38,6 +38,10 @@ class Boutpp(CMakePackage):
     version("4.2.1", branch="origin/v4.2.1-rc", submodules=True)
     version("4.2.0", branch="origin/v4.2-rc", submodules=True)
 
+    # Patches
+    # Use patch from Tom B's Docker setup to work around 'missing: MPI_C_FOUND C' issue
+    patch("enable_c.patch")
+
     # Variants
     variant("adios2", default=False, description="Builds with ADIOS2 support.")
     variant("backtrace", default=True, description="Enable backtrace.")
@@ -153,6 +157,7 @@ class Boutpp(CMakePackage):
             self.define("BOUT_DOWNLOAD_ADIOS2", False),
             self.define("BOUT_DOWNLOAD_NETCDF_CXX4", False),
             self.define("BOUT_DOWNLOAD_SUNDIALS", False),
+            self.define("BOUT_ENABLE_MPI", True),
             self.define("INSTALL_GTEST", False),
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
         ]
