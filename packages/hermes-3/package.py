@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import CMakePackage, depends_on, maintainers, variant, version
 
 
 class Hermes3(CMakePackage):
@@ -48,9 +48,6 @@ class Hermes3(CMakePackage):
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
 
-    # Always-required dependencies
-    # depends_on("adios2", type=("build", "link"))
-
     depends_on("cmake@3.24:", type="build")
     depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
@@ -58,9 +55,7 @@ class Hermes3(CMakePackage):
     depends_on("netcdf-cxx4", type=("build", "link"))
 
     # Variant-controlled dependencies
-    depends_on("petsc+hypre+mpi~debug~fortran", when="+petsc", type=("build", "link"))
     depends_on("py-xhermes", when="+xhermes", type=("run"))
-    depends_on("sundials", when="+sundials", type=("build", "link"))
 
     def cmake_args(self):
         # Definitions controlled by variants
