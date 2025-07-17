@@ -5,9 +5,7 @@
 
 # ----------------------------------------------------------------------------
 
-from spack.package import *
-
-# from spack.package import CMakePackage, depends_on, variant, version
+from spack.package import CMakePackage, depends_on, variant, version
 
 
 class Boutpp(CMakePackage):
@@ -100,18 +98,19 @@ class Boutpp(CMakePackage):
         "lapack",
         "raja",
         "scorep",
+        "sundials",
         "umpire",
     ]
     for dep in simple_dependencies:
         depends_on(dep, type=("build", "link"), when=f"+{dep}")
 
-    # Other dependencies derived from variants
+    # Other dependencies affected by variants
     depends_on("netcdf-cxx4", type=("build", "link"), when="+netcdf")
     depends_on("petsc+hypre+mpi~debug~fortran", type=("build", "link"), when="+petsc")
-
-    # depends_on("python", type=("build", "link"), when="+python")
-    # depends_on("py-cython", type=("build", "link"), when="+python")
-    # depends_on("py-numpy", type=("build", "link"), when="+python")
+    depends_on("python", type=("build", "link"), when="+python")
+    depends_on("py-cython", type=("build", "link"), when="+python")
+    depends_on("py-jinja2", type=("build", "link"), when="+python")
+    depends_on("py-numpy", type=("build", "link"), when="+python")
 
     def cmake_args(self):
         # Definitions controlled by variants
