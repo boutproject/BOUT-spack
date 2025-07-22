@@ -61,6 +61,7 @@ class Boutpp(CMakePackage):
         multi=True,
     )
     variant("cuda", default=False, description="Builds with CUDA support.")
+    variant("fftw", default=True, description="Builds with FFTW support.")
     variant("hypre", default=False, description="Builds with Hypre support.")
     variant("lapack", default=False, description="Builds with LAPACK support.")
     variant("metric3d", default=False, description="Enable 3D metric support.")
@@ -70,23 +71,28 @@ class Boutpp(CMakePackage):
     variant("pvode", default=False, description="Builds with PVODE support.")
     variant("python", default=False, description="Builds with Python support.")
     variant("raja", default=False, description="Builds with RAJA support.")
+    variant("sanitize_address", default=False, description="Enable address sanitizer.")
+    variant("sanitize_leak", default=False, description="Enable leak sanitizer.")
+    variant("sanitize_memory", default=False, description="Enable memory sanitizer.")
+    variant("sanitize_thread", default=False, description="Enable thread sanitizer.")
+    variant(
+        "sanitize_undefined",
+        default=False,
+        description="Enable undefined behavior sanitizer.",
+    )
     variant("scorep", default=False, description="Builds with Score-P support.")
     variant("slepc", default=False, description="Builds with SLEPC support.")
     variant("shared", default=True, description="Build shared libraries.")
     variant("sigfpe", default=False, description="Signal floating point exceptions.")
     variant("signal", default=True, description="Signal handling.")
-    variant("sundials", default=True, description="Builds with SUNDIALS support.")
+    variant("sundials", default=False, description="Builds with SUNDIALS support.")
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
-
-    # BOUT_GENERATE_FIELDOPS (ON if python, clang-format found, OFF otherwise) "Automatically re-generate the Field arithmetic operators from the Python templates." (requires + python)
-    # BOUT_ENABLE_WARNINGS(ON) Leave alone?
 
     # Fixed dependencies
     depends_on("c", type="build")
     depends_on("cxx", type="build")
     depends_on("cmake@3.17:", type="build")
-    depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
 
     # Simple build dependencies - those derived from variants with the same name and no special variant options of their own
@@ -94,6 +100,7 @@ class Boutpp(CMakePackage):
         "adios2",
         "caliper",
         "cuda",
+        "fftw",
         "hypre",
         "lapack",
         "raja",
@@ -120,18 +127,28 @@ class Boutpp(CMakePackage):
             "BOUT_BUILD_DOCS": "builddocs",
             "BOUT_BUILD_EXAMPLES": "buildexamples",
             "BOUT_ENABLE_CALIPER": "caliper",
-            "BOUT_USE_PVODE": "pvode",
+            "CHECK": "check",
+            "BOUT_ENABLE_CUDA": "cuda",
             "BOUT_USE_HYPRE": "hypre",
+            "BOUT_USE_LAPACK": "lapack",
             "BOUT_ENABLE_METRIC_3D": "metric3d",
             "BOUT_USE_NETCDF": "netcdf",
             "BOUT_ENABLE_OPENMP": "openmp",
             "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_PVODE": "pvode",
+            "BOUT_ENABLE_PYTHON": "python",
             "BOUT_ENABLE_RAJA": "raja",
-            "BOUT_USE_SUNDIALS": "sundials",
+            "ENABLE_SANITIZER_ADDRESS": "sanitize_address",
+            "ENABLE_SANITIZER_LEAK": "sanitize_leak",
+            "ENABLE_SANITIZER_MEMORY": "sanitize_memory",
+            "ENABLE_SANITIZER_THREAD": "sanitize_thread",
+            "ENABLE_SANITIZER_UNDEFINED_BEH": "sanitize_undefined",
+            "BOUT_USE_SCOREP": "scorep",
             "BOUT_USE_SLEPC": "slepc",
             "BUILD_SHARED_LIBS": "shared",
+            "BOUT_ENABLE_SIGFPE": "sigfpe",
             "BOUT_ENABLE_SIGNAL": "signal",
+            "BOUT_USE_SUNDIALS": "sundials",
             "BOUT_ENABLE_TRACK": "track",
             "BOUT_ENABLE_UMPIRE": "umpire",
         }
@@ -157,6 +174,7 @@ class Boutpp(CMakePackage):
             self.define("BOUT_DOWNLOAD_NETCDF_CXX4", False),
             self.define("BOUT_DOWNLOAD_SUNDIALS", False),
             self.define("BOUT_ENABLE_MPI", True),
+            self.define("BOUT_GENERATE_FIELDOPS", False),
             self.define("INSTALL_GTEST", False),
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
         ]
