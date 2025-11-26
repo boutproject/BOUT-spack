@@ -139,7 +139,6 @@ class Boutpp(CMakePackage):
             "BOUT_ENABLE_METRIC_3D": "metric3d",
             "BOUT_USE_NETCDF": "netcdf",
             "BOUT_ENABLE_OPENMP": "openmp",
-            "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_PVODE": "pvode",
             "BOUT_ENABLE_PYTHON": "python",
             "BOUT_ENABLE_RAJA": "raja",
@@ -166,6 +165,9 @@ class Boutpp(CMakePackage):
                 "BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none"
             )
         )
+        petsc_variants_enabled = self.spec.variants["petsc"] or self.spec.variants["mumps"] or self.spec.variants["strumpack"] or self.spec.variants["superlu-dist"]
+        variant_args.append(self.define("BOUT_USE_PETSC",petsc_variants_enabled))
+
         variant_args.append(
             self.define(
                 "BOUT_ENABLE_ALL_TESTS",
