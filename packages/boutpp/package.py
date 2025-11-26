@@ -85,6 +85,11 @@ class Boutpp(CMakePackage):
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
 
+    # Variants that exist purely for easy pass-through to PETSc
+    variant("mumps", default=False, description="Build PETSc dependency with MUMPS.")
+    variant("strumpack", default=False, description="Build PETSc dependency with STRUMPACK.")
+    variant("superlu-dist", default=False, description="Build PETSc dependency with SuperLU_DIST.")
+
     # Fixed dependencies
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -110,10 +115,14 @@ class Boutpp(CMakePackage):
 
     # Other dependencies affected by variants
     depends_on("netcdf-cxx4", type=("build", "link"), when="+netcdf")
-    depends_on("petsc+hypre+mpi~debug~fortran", type=("build", "link"), when="+petsc")
     depends_on("py-cython", type=("build", "link"), when="+python")
     depends_on("py-jinja2", type=("build", "link"), when="+python")
     depends_on("py-numpy", type=("build", "link"), when="+python")
+
+    # Handle PETSc separately, passing through particular variants
+    depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
+    for petsc_var in ["hypre","mumps","strumpack","superlu-dist"]:
+        depends_on(f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+petsc+{petsc_var}")
 
     def cmake_args(self):
         # Definitions controlled by variants
