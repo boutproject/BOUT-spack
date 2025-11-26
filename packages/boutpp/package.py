@@ -99,6 +99,7 @@ class Boutpp(CMakePackage):
         "fftw",
         "hypre",
         "lapack",
+        "python",
         "raja",
         "scorep",
         "sundials",
@@ -110,7 +111,6 @@ class Boutpp(CMakePackage):
     # Other dependencies affected by variants
     depends_on("netcdf-cxx4", type=("build", "link"), when="+netcdf")
     depends_on("petsc+hypre+mpi~debug~fortran", type=("build", "link"), when="+petsc")
-    depends_on("python", type=("build", "link"), when="+python")
     depends_on("py-cython", type=("build", "link"), when="+python")
     depends_on("py-jinja2", type=("build", "link"), when="+python")
     depends_on("py-numpy", type=("build", "link"), when="+python")
