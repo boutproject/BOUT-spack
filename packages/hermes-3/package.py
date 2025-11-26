@@ -35,16 +35,6 @@ class Hermes3(CMakePackage):
         multi=False,
     )
     variant(
-        "petsc",
-        default=False,
-        description="Builds boutpp dependency with PETSc support.",
-    )
-    variant(
-        "sundials",
-        default=True,
-        description="Builds boutpp dependency with SUNDIALS support.",
-    )
-    variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
 
