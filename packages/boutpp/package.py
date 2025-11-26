@@ -122,7 +122,7 @@ class Boutpp(CMakePackage):
     # Handle PETSc separately, passing through particular variants
     depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
     for petsc_var in ["hypre","mumps","strumpack","superlu-dist"]:
-        depends_on(f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+petsc+{petsc_var}")
+        depends_on(f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}")
 
     def cmake_args(self):
         # Definitions controlled by variants
