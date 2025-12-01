@@ -46,6 +46,7 @@ class Hermes3(CMakePackage):
     depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("netcdf-cxx4", type=("build", "link"))
+    depends_on("py-boutdata@0.3.0:", type=("run"));
     # Needed for BOUT++ python bindings, should be able to move this when BOUT is split into a separate package
     depends_on("py-numpy", type=("build", "link"))
 
