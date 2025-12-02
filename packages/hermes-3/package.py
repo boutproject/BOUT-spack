@@ -43,6 +43,7 @@ class Hermes3(CMakePackage):
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("boutpp", type=("build", "link"))
     depends_on("netcdf-cxx4", type=("build", "link"))
+    depends_on("py-boutdata@0.3.0:", type=("run"))
 
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
