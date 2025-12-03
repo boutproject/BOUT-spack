@@ -11,6 +11,7 @@ class PyXbout(PythonPackage):
 
     homepage = "https://github.com/boutproject/xBOUT"
     pypi = "xbout/xbout-0.3.7.tar.gz"
+    git      = "https://github.com/boutproject/xbout.git"
 
     # Set a maintainer if submitting this package to the spack repo
     # maintainers("github_user1", "github_user2")
@@ -21,6 +22,7 @@ class PyXbout(PythonPackage):
         "0.3.7",
         sha256="51b6bcc888553037a623f68dccfe7755ca409801d5b2dd1b8b1ecaca78c1eff1",
     )
+    version("develop", branch="main")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))

@@ -39,6 +39,7 @@ class Hermes3(CMakePackage):
     variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
+    variant("reactions", default=False, description="Build Hermes-3 with VANTAGE-Reactions suppport.")
 
     # Always-required dependencies
     # depends_on("adios2", type=("build", "link"))
@@ -56,6 +57,7 @@ class Hermes3(CMakePackage):
     )
     depends_on("py-xhermes", when="+xhermes", type=("run"))
     depends_on("sundials", when="+sundials", type=("build", "link"))
+    depends_on("reactions", when="+reactions", type=("build", "link"))
 
     def cmake_args(self):
         # ON/OFF definitions controlled by variants
@@ -63,6 +65,7 @@ class Hermes3(CMakePackage):
             "HERMES_SLOPE_LIMITER": "limiter",
             "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_SUNDIALS": "sundials",
+            "HERMES_USE_VANTAGE": "reactions",
         }
         variants_args = [
             self.define_from_variant(def_str, var_str)
