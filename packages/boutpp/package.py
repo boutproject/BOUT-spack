@@ -87,8 +87,14 @@ class Boutpp(CMakePackage):
 
     # Variants that exist purely for easy pass-through to PETSc
     variant("mumps", default=False, description="Build PETSc dependency with MUMPS.")
-    variant("strumpack", default=False, description="Build PETSc dependency with STRUMPACK.")
-    variant("superlu-dist", default=False, description="Build PETSc dependency with SuperLU_DIST.")
+    variant(
+        "strumpack", default=False, description="Build PETSc dependency with STRUMPACK."
+    )
+    variant(
+        "superlu-dist",
+        default=False,
+        description="Build PETSc dependency with SuperLU_DIST.",
+    )
 
     # Fixed dependencies
     depends_on("c", type="build")
@@ -121,8 +127,10 @@ class Boutpp(CMakePackage):
 
     # Handle PETSc separately, passing through particular variants
     depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
-    for petsc_var in ["hypre","mumps","strumpack","superlu-dist"]:
-        depends_on(f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}")
+    for petsc_var in ["hypre", "mumps", "strumpack", "superlu-dist"]:
+        depends_on(
+            f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}"
+        )
 
     def cmake_args(self):
         # Definitions controlled by variants
@@ -165,8 +173,13 @@ class Boutpp(CMakePackage):
                 "BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none"
             )
         )
-        petsc_variants_enabled = self.spec.variants["petsc"] or self.spec.variants["mumps"] or self.spec.variants["strumpack"] or self.spec.variants["superlu-dist"]
-        variant_args.append(self.define("BOUT_USE_PETSC",petsc_variants_enabled))
+        petsc_variants_enabled = (
+            self.spec.variants["petsc"]
+            or self.spec.variants["mumps"]
+            or self.spec.variants["strumpack"]
+            or self.spec.variants["superlu-dist"]
+        )
+        variant_args.append(self.define("BOUT_USE_PETSC", petsc_variants_enabled))
 
         variant_args.append(
             self.define(
