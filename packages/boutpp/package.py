@@ -15,7 +15,7 @@ class Boutpp(CMakePackage):
     git = "https://github.com/boutproject/BOUT-dev"
     url = "https://github.com/boutproject/BOUT-dev/releases/download/v5.1.0/BOUT++-v5.1.0.tar.gz"
 
-    # maintainers("bendudson")
+    maintainers("oparry-ukaea")
 
     license("LGPL-3.0-only")
 
