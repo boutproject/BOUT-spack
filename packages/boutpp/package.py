@@ -87,9 +87,11 @@ class Boutpp(CMakePackage):
 
     # Variants that exist purely for easy pass-through to PETSc
     variant("mumps", default=False, description="Build PETSc dependency with MUMPS.")
-    variant(
-        "strumpack", default=False, description="Build PETSc dependency with STRUMPACK."
-    )
+
+    # Disable STRUMPACK support for now; numpy build fails - might be related to https://github.com/spack/spack-packages/issues/953
+    # variant(
+    #     "strumpack", default=False, description="Build PETSc dependency with STRUMPACK."
+    # )
     variant(
         "superlu-dist",
         default=False,
@@ -127,7 +129,7 @@ class Boutpp(CMakePackage):
 
     # Handle PETSc separately, passing through particular variants
     depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
-    for petsc_var in ["hypre", "mumps", "strumpack", "superlu-dist"]:
+    for petsc_var in ["hypre", "mumps", "superlu-dist"]:
         depends_on(
             f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}"
         )
@@ -176,7 +178,6 @@ class Boutpp(CMakePackage):
         petsc_variants_enabled = (
             self.spec.variants["petsc"]
             or self.spec.variants["mumps"]
-            or self.spec.variants["strumpack"]
             or self.spec.variants["superlu-dist"]
         )
         variant_args.append(self.define("BOUT_USE_PETSC", petsc_variants_enabled))
