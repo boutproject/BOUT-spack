@@ -104,8 +104,9 @@ class Boutpp(CMakePackage):
     depends_on("cmake@3.17:", type="build")
     depends_on("mpi", type=("build", "link", "run"))
 
-    # Simple build dependencies - those derived from variants with the same name and no special variant options of their own
-    simple_dependencies = [
+    # Simple build dependencies
+    # Derived from variants with the same name, an optional version specifier, but no special variant options of their own
+    simple_deps = [
         "adios2",
         "caliper",
         "cuda",
@@ -118,8 +119,10 @@ class Boutpp(CMakePackage):
         "sundials",
         "umpire",
     ]
-    for dep in simple_dependencies:
-        depends_on(dep, type=("build", "link"), when=f"+{dep}")
+    simple_dep_versions = {"sundials": "@2.6:6.7.0"}
+    for dep in simple_deps:
+        dep_spec = dep if not dep in simple_dep_versions else f"{dep}@{simple_dep_versions[dep]}"
+        depends_on(dep_spec, type=("build", "link"), when=f"+{dep}")
 
     # Other dependencies affected by variants
     depends_on("netcdf-cxx4", type=("build", "link"), when="+netcdf")
