@@ -4,7 +4,24 @@
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
 from spack.package import CMakePackage, depends_on, maintainers, variant, version
+import spack.repo
 
+
+def check_pkg_available(_unused1, variant_name, _unused2, raise_on_notfound=True):
+    """Validator function to check that packages (particularly 'Reactions') are known to spack."""
+    if not spack.repo.PATH.exists(variant_name):
+        if raise_on_notfound:
+            err_msg = f"Package '{variant_name}' does not exist in any known package repository."
+            if variant_name == "vantagereactions":
+                err_msg += "\nNote that building hermes-3 with +vantagereactions currently requires spack to be pointed to the packages inside a local copy of the https://github.com/UKAEA-Edge-Code/VANTAGE-Reactions git repo."
+            raise InstallError(err_msg)
+        else:
+            return False
+    else:
+        return True
+
+def vantagereactions_pkg_available():
+    return check_pkg_available("", "vantagereactions", "",raise_on_notfound=False)
 
 class Hermes3(CMakePackage):
     """A multifluid magnetized plasma simulation model.
@@ -37,6 +54,12 @@ class Hermes3(CMakePackage):
     variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
+    variant(
+        "vantagereactions",
+        default=False,
+        description="Build Hermes-3 with VANTAGE-Reactions suppport.",
+        validator=check_pkg_available,
+    )
 
     depends_on("cmake@3.24:", type="build")
     depends_on("fftw", type=("build", "link"))
@@ -47,11 +70,14 @@ class Hermes3(CMakePackage):
 
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
+    if vantagereactions_pkg_available():
+        depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
 
     def cmake_args(self):
         # Definitions controlled by variants
         variant_defs = {
             "HERMES_SLOPE_LIMITER": "limiter",
+            "HERMES_USE_VANTAGE": "vantagereactions",
         }
         variant_args = [
             self.define_from_variant(def_str, var_str)
