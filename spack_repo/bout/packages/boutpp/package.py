@@ -6,7 +6,7 @@
 # ----------------------------------------------------------------------------
 
 from spack_repo.builtin.build_systems.cmake import CMakePackage
-from spack.package import conflicts, depends_on, patch, variant, version
+from spack.package import conflicts, depends_on, license, maintainers, patch, variant, version
 
 
 class Boutpp(CMakePackage):

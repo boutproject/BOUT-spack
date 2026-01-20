@@ -3,7 +3,8 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import *
+from spack_repo.builtin.build_systems.python import PythonPackage
+from spack.package import depends_on, version
 
 
 class PyXbout(PythonPackage):
@@ -15,7 +16,7 @@ class PyXbout(PythonPackage):
     # Set a maintainer if submitting this package to the spack repo
     # maintainers("github_user1", "github_user2")
 
-    license("Apache-2.0")
+    #license("Apache-2.0")
 
     version(
         "0.3.7",

@@ -5,7 +5,7 @@
 
 from spack_repo.builtin.build_systems.cmake import CMakePackage
 from spack.error import InstallError
-from spack.package import depends_on, maintainers, variant, version
+from spack.package import depends_on, license, maintainers, variant, version
 import spack.repo
 
 
