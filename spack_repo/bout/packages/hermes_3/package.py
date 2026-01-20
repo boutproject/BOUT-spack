@@ -65,6 +65,8 @@ class Hermes3(CMakePackage):
         validator=check_pkg_available,
     )
 
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     depends_on("cmake@3.24:", type="build")
     depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
