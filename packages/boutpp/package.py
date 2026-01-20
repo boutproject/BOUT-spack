@@ -22,19 +22,10 @@ class Boutpp(CMakePackage):
     version("develop", branch="develop", submodules=True)
     version("master", branch="master", submodules=True, preferred=True)
 
-    version("5.1.1", branch="origin/v5.1.1-rc", submodules=True)
-    version("5.1.0", branch="origin/v5.1.0-rc", submodules=True)
-    version("5.1.0", branch="origin/v5.0.0-rc", submodules=True)
-    version("4.4.2", branch="origin/v4.4.2-rc", submodules=True)
-    version("4.4.1", branch="origin/v4.4.1-rc", submodules=True)
-    version("4.3.3", branch="origin/v4.3.3-rc", submodules=True)
-    version("4.3.2", branch="origin/v4.3.2-rc", submodules=True)
-    version("4.3.1", branch="origin/v4.3.1-rc", submodules=True)
-    version("4.3.0", branch="origin/v4.3.0-rc", submodules=True)
-    version("4.2.3", branch="origin/v4.2.3-rc", submodules=True)
-    version("4.2.2", branch="origin/v4.2.2-rc", submodules=True)
-    version("4.2.1", branch="origin/v4.2.1-rc", submodules=True)
-    version("4.2.0", branch="origin/v4.2-rc", submodules=True)
+    # Include tagged versions that use CMake (5.0.0 onwards)
+    tagged_versions = ["5.0.0", "5.1.0", "5.1.1", "5.2.0"]
+    for v in tagged_versions:
+        version(v, tag=f"v{v}", submodules=True)
 
     # Variants
     variant("adios2", default=False, description="Builds with ADIOS2 support.")
