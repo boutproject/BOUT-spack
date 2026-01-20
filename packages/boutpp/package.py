@@ -168,9 +168,9 @@ class Boutpp(CMakePackage):
             )
         )
         petsc_variants_enabled = (
-            self.spec.variants["petsc"]
-            or self.spec.variants["mumps"]
-            or self.spec.variants["superlu-dist"]
+            self.spec.variants["petsc"].value
+            or self.spec.variants["mumps"].value
+            or self.spec.variants["superlu-dist"].value
         )
         variant_args.append(self.define("BOUT_USE_PETSC", petsc_variants_enabled))
 
