@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import CMakePackage, depends_on, maintainers, variant, version
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack.error import InstallError
+from spack.package import depends_on, maintainers, variant, version
 import spack.repo
 
 
@@ -20,8 +22,10 @@ def check_pkg_available(_unused1, variant_name, _unused2, raise_on_notfound=True
     else:
         return True
 
+
 def vantagereactions_pkg_available():
-    return check_pkg_available("", "vantagereactions", "",raise_on_notfound=False)
+    return check_pkg_available("", "vantagereactions", "", raise_on_notfound=False)
+
 
 class Hermes3(CMakePackage):
     """A multifluid magnetized plasma simulation model.
