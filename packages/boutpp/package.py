@@ -55,7 +55,6 @@ class Boutpp(CMakePackage):
     variant("netcdf", default=True, description="Enable support for NetCDF output.")
     variant("openmp", default=False, description="Enable OpenMP support.")
     variant("petsc", default=False, description="Builds with PETSc support.")
-    variant("pvode", default=False, description="Builds with PVODE support.")
     variant("python", default=False, description="Builds with Python support.")
     variant("raja", default=False, description="Builds with RAJA support.")
     variant("sanitize_address", default=False, description="Enable address sanitizer.")
@@ -143,7 +142,6 @@ class Boutpp(CMakePackage):
             "BOUT_ENABLE_METRIC_3D": "metric3d",
             "BOUT_USE_NETCDF": "netcdf",
             "BOUT_ENABLE_OPENMP": "openmp",
-            "BOUT_USE_PVODE": "pvode",
             "BOUT_ENABLE_PYTHON": "python",
             "BOUT_ENABLE_RAJA": "raja",
             "ENABLE_SANITIZER_ADDRESS": "sanitize_address",
