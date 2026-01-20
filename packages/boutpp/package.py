@@ -162,11 +162,8 @@ class Boutpp(CMakePackage):
             self.define_from_variant(def_str, var_str)
             for def_str, var_str in variant_defs.items()
         ]
-        variant_args.append(
-            self.define(
-                "BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none"
-            )
-        )
+
+        # Enable PETSc if any of the PETSc-component variants are enabled
         petsc_variants_enabled = (
             self.spec.variants["petsc"].value
             or self.spec.variants["mumps"].value
@@ -174,6 +171,13 @@ class Boutpp(CMakePackage):
         )
         variant_args.append(self.define("BOUT_USE_PETSC", petsc_variants_enabled))
 
+        # Build tests unless variant buildtests=none
+        variant_args.append(
+            self.define(
+                "BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none"
+            )
+        )
+        # Build ALL tests if variant buildtests=all
         variant_args.append(
             self.define(
                 "BOUT_ENABLE_ALL_TESTS",
@@ -181,7 +185,7 @@ class Boutpp(CMakePackage):
             )
         )
 
-        # Fixed definitions
+        # Always use these definitions
         fixed_args = [
             self.define("BOUT_DOWNLOAD_ADIOS2", False),
             self.define("BOUT_DOWNLOAD_NETCDF_CXX4", False),
@@ -191,7 +195,6 @@ class Boutpp(CMakePackage):
             self.define("INSTALL_GTEST", False),
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
         ]
-
         # There are problems with how CMake finds the glibc/standalone versions
         # of gettext (see
         # https://github.com/boutproject/hermes-3/issues/356#issuecomment-2999715879).
