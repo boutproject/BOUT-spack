@@ -72,6 +72,7 @@ class Hermes3(CMakePackage):
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("boutpp", type=("build", "link"))
     depends_on("netcdf-cxx4", type=("build", "link"))
+    # Need boutdata for boutupgrader script, even when not installing xhermes
     depends_on("py-boutdata@0.3.0:", type=("run"))
 
     # Variant-controlled dependencies
