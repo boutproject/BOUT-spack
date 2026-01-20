@@ -12,16 +12,16 @@ def check_pkg_available(_unused1, variant_name, _unused2, raise_on_notfound=True
     if not spack.repo.PATH.exists(variant_name):
         if raise_on_notfound:
             err_msg = f"Package '{variant_name}' does not exist in any known package repository."
-            if variant_name == "reactions":
-                err_msg += "\nNote that building hermes-3 with +reactions currently requires spack to be pointed to the packages inside a local copy of the https://github.com/UKAEA-Edge-Code/VANTAGE-Reactions git repo."
+            if variant_name == "vantagereactions":
+                err_msg += "\nNote that building hermes-3 with +vantagereactions currently requires spack to be pointed to the packages inside a local copy of the https://github.com/UKAEA-Edge-Code/VANTAGE-Reactions git repo."
             raise InstallError(err_msg)
         else:
             return False
     else:
         return True
 
-def reactions_pkg_available():
-    return check_pkg_available("", "reactions", "",raise_on_notfound=False)
+def vantagereactions_pkg_available():
+    return check_pkg_available("", "vantagereactions", "",raise_on_notfound=False)
 
 class Hermes3(CMakePackage):
     """A multifluid magnetized plasma simulation model.
@@ -57,7 +57,7 @@ class Hermes3(CMakePackage):
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
     variant(
-        "reactions",
+        "vantagereactions",
         default=False,
         description="Build Hermes-3 with VANTAGE-Reactions suppport.",
         validator=check_pkg_available,
@@ -78,8 +78,8 @@ class Hermes3(CMakePackage):
     )
     depends_on("py-xhermes", when="+xhermes", type=("run"))
     depends_on("sundials", when="+sundials", type=("build", "link"))
-    if reactions_pkg_available():
-        depends_on("reactions", when="+reactions", type=("build", "link"))
+    if vantagereactions_pkg_available():
+        depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
 
     def cmake_args(self):
         # ON/OFF definitions controlled by variants
@@ -87,7 +87,7 @@ class Hermes3(CMakePackage):
             "HERMES_SLOPE_LIMITER": "limiter",
             "BOUT_USE_PETSC": "petsc",
             "BOUT_USE_SUNDIALS": "sundials",
-            "HERMES_USE_VANTAGE": "reactions",
+            "HERMES_USE_VANTAGE": "vantagereactions",
         }
         variants_args = [
             self.define_from_variant(def_str, var_str)
