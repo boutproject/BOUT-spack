@@ -121,7 +121,7 @@ class Boutpp(CMakePackage):
     depends_on("py-numpy", type=("build", "link"), when="+python")
 
     # Handle PETSc separately, passing through particular variants
-    depends_on("petsc+mpi@3.23:", type=("build", "link"), when="+petsc")
+    depends_on("petsc@3.7:3.23+mpi", type=("build", "link"), when="+petsc")
     for petsc_var in ["hypre", "mumps", "superlu-dist"]:
         depends_on(
             f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}"
