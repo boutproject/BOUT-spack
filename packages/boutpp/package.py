@@ -19,7 +19,7 @@ class Boutpp(CMakePackage):
 
     license("LGPL-3.0-only")
 
-    version("develop", branch="develop", submodules=True)
+    version("develop", branch="next", submodules=True)
     version("master", branch="master", submodules=True, preferred=True)
 
     # Include tagged versions that use CMake (5.0.0 onwards)
