@@ -208,8 +208,9 @@ class Boutpp(CMakePackage):
             self.define("BOUT_DOWNLOAD_SUNDIALS", False),
             self.define("BOUT_ENABLE_MPI", True),
             self.define("BOUT_GENERATE_FIELDOPS", False),
-            self.define("INSTALL_GTEST", False),
+            self.define("BOUT_IGNORE_CONDA_ENV",True),
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
+            self.define("INSTALL_GTEST", False),
         ]
         # There are problems with how CMake finds the glibc/standalone versions
         # of gettext (see
