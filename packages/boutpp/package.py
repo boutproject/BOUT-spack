@@ -79,19 +79,6 @@ class Boutpp(CMakePackage):
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
 
-    # Variants that exist purely for easy pass-through to PETSc
-    variant("mumps", default=False, description="Build PETSc dependency with MUMPS.")
-
-    # Disable STRUMPACK support for now; numpy build fails - might be related to https://github.com/spack/spack-packages/issues/953
-    # variant(
-    #     "strumpack", default=False, description="Build PETSc dependency with STRUMPACK."
-    # )
-    variant(
-        "superlu-dist",
-        default=False,
-        description="Build PETSc dependency with SuperLU_DIST.",
-    )
-
     # Fixed dependencies
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -128,15 +115,9 @@ class Boutpp(CMakePackage):
     depends_on("py-jinja2", type=("build", "link"), when="+python")
     depends_on("py-numpy", type=("build", "link"), when="+python")
 
-    # PETSc is more complicated:
-
     # Require PETSc with MPI if any PETSc-related variant is enabled
     depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
-    # Pass through PETSc component variants
-    for petsc_var in ["hypre", "mumps", "superlu-dist"]:
-        depends_on(f"petsc+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}")
-
-    # Supported PETSc version range across all BOUT versions:
+    # All supported PETSc versions (across all BOUT versions):
     depends_on("petsc@3.7:3.23", type=("build", "link"))
     # Max PETSc version for BOUT v5.0.0:
     depends_on("petsc@:3.17", type=("build", "link"), when="@5.0.0")
@@ -156,6 +137,7 @@ class Boutpp(CMakePackage):
             "BOUT_ENABLE_METRIC_3D": "metric3d",
             "BOUT_USE_NETCDF": "netcdf",
             "BOUT_ENABLE_OPENMP": "openmp",
+            "BOUT_USE_PETSC": "petsc",
             "BOUT_ENABLE_PYTHON": "python",
             "BOUT_ENABLE_RAJA": "raja",
             "ENABLE_SANITIZER_ADDRESS": "sanitize_address",
@@ -176,14 +158,6 @@ class Boutpp(CMakePackage):
             self.define_from_variant(def_str, var_str)
             for def_str, var_str in variant_defs.items()
         ]
-
-        # Enable PETSc if any of the PETSc-component variants are enabled
-        petsc_variants_enabled = (
-            self.spec.variants["petsc"].value
-            or self.spec.variants["mumps"].value
-            or self.spec.variants["superlu-dist"].value
-        )
-        variant_args.append(self.define("BOUT_USE_PETSC", petsc_variants_enabled))
 
         # Build tests unless variant buildtests=none
         variant_args.append(
