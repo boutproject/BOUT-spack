@@ -97,6 +97,7 @@ class Boutpp(CMakePackage):
         "python",
         "raja",
         "scorep",
+        "slepc",
         "sundials",
         "umpire",
     ]
