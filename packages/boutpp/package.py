@@ -124,12 +124,20 @@ class Boutpp(CMakePackage):
     depends_on("py-jinja2", type=("build", "link"), when="+python")
     depends_on("py-numpy", type=("build", "link"), when="+python")
 
-    # Handle PETSc separately, passing through particular variants
-    depends_on("petsc@3.7:3.23+mpi", type=("build", "link"), when="+petsc")
+    # PETSc is more complicated:
+
+    # Require PETSc with MPI if any PETSc-related variant is enabled
+    depends_on("petsc+mpi", type=("build", "link"), when="+petsc")
+    # Pass through PETSc component variants
     for petsc_var in ["hypre", "mumps", "superlu-dist"]:
-        depends_on(
-            f"petsc+mpi+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}"
-        )
+        depends_on(f"petsc+{petsc_var}", type=("build", "link"), when=f"+{petsc_var}")
+
+    # Supported PETSc version range across all BOUT versions:
+    depends_on("petsc@3.7:3.23", type=("build", "link"))
+    # Max PETSc version for BOUT v5.0.0:
+    depends_on("petsc@:3.17", type=("build", "link"), when="@5.0.0")
+    # Max PETSc version for BOUT v5.1.x:
+    # depends_on("petsc@:3.19", type=("build", "link"), when="@5.1")
 
     def cmake_args(self):
         # Definitions controlled by variants
