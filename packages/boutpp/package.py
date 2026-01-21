@@ -208,6 +208,7 @@ class Boutpp(CMakePackage):
             self.define("BOUT_GENERATE_FIELDOPS", False),
             self.define("BOUT_IGNORE_CONDA_ENV",True),
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
+            self.define("BOUT_USE_PVODE", True),
             self.define("INSTALL_GTEST", False),
         ]
         # There are problems with how CMake finds the glibc/standalone versions
