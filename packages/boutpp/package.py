@@ -140,8 +140,6 @@ class Boutpp(CMakePackage):
     depends_on("petsc@3.7:3.23", type=("build", "link"))
     # Max PETSc version for BOUT v5.0.0:
     depends_on("petsc@:3.17", type=("build", "link"), when="@5.0.0")
-    # Max PETSc version for BOUT v5.1.x:
-    # depends_on("petsc@:3.19", type=("build", "link"), when="@5.1")
 
     def cmake_args(self):
         # Definitions controlled by variants
