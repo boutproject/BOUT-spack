@@ -5,7 +5,7 @@
 
 # ----------------------------------------------------------------------------
 
-from spack.package import CMakePackage, depends_on, variant, version
+from spack.package import CMakePackage, depends_on, patch, variant, version
 
 
 class Boutpp(CMakePackage):
@@ -26,6 +26,10 @@ class Boutpp(CMakePackage):
     tagged_versions = ["5.0.0", "5.1.0", "5.1.1", "5.2.0"]
     for v in tagged_versions:
         version(v, tag=f"v{v}", submodules=True)
+
+    # Patches
+    patch("fix_thirdparty_cmake_v5.0.0.patch", when="@5.0.0")
+    patch("fix_thirdparty_cmake_v5.1.x.patch", when="@5.1")
 
     # Variants
     variant("adios2", default=False, description="Builds with ADIOS2 support.")

@@ -1,0 +1,24 @@
+diff --git a/cmake/FindnetCDF.cmake b/cmake/FindnetCDF.cmake
+index 393c57549b..361095954e 100644
+--- a/cmake/FindnetCDF.cmake
++++ b/cmake/FindnetCDF.cmake
+@@ -32,6 +32,7 @@ if (NOT netCDF_ROOT AND EXISTS "${BOUT_USE_NETCDF}")
+   set(netCDF_ROOT "${BOUT_USE_NETCDF}")
+ endif()
+ 
++enable_language(C)
+ find_package(netCDF QUIET CONFIG)
+ 
+ if (netCDF_FOUND)
+diff --git a/cmake/SetupBOUTThirdParty.cmake b/cmake/SetupBOUTThirdParty.cmake
+index 78dfc6b56e..37af2337d9 100644
+--- a/cmake/SetupBOUTThirdParty.cmake
++++ b/cmake/SetupBOUTThirdParty.cmake
+@@ -233,6 +233,7 @@ option(BOUT_DOWNLOAD_SUNDIALS "Download and build SUNDIALS" OFF)
+ cmake_dependent_option(BOUT_USE_SUNDIALS "Enable support for SUNDIALS time solvers" OFF
+   "NOT BOUT_DOWNLOAD_SUNDIALS" ON)
+ if (BOUT_USE_SUNDIALS)
++  enable_language(C)
+   if (BOUT_DOWNLOAD_SUNDIALS)
+     message(STATUS "Downloading and configuring SUNDIALS")
+     include(FetchContent)
