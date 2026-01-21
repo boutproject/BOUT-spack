@@ -111,7 +111,11 @@ class Boutpp(CMakePackage):
     ]
     simple_dep_versions = {"sundials": "2.6:6.7.0"}
     for dep in simple_deps:
-        dep_spec = dep if not dep in simple_dep_versions else f"{dep}@{simple_dep_versions[dep]}"
+        dep_spec = (
+            dep
+            if not dep in simple_dep_versions
+            else f"{dep}@{simple_dep_versions[dep]}"
+        )
         depends_on(dep_spec, type=("build", "link"), when=f"+{dep}")
 
     # Other dependencies affected by variants
