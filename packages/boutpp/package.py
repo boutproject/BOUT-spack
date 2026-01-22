@@ -176,14 +176,20 @@ class Boutpp(CMakePackage):
 
         # Always use these definitions
         fixed_args = [
+            # Don't download any dependencies (use spack to resolve them instead)
             self.define("BOUT_DOWNLOAD_ADIOS2", False),
             self.define("BOUT_DOWNLOAD_NETCDF_CXX4", False),
             self.define("BOUT_DOWNLOAD_SUNDIALS", False),
+            # Always build with MPI
             self.define("BOUT_ENABLE_MPI", True),
             self.define("BOUT_GENERATE_FIELDOPS", False),
+            # Avoid any confusion between conda and spack
             self.define("BOUT_IGNORE_CONDA_ENV",True),
+            # Ensure bout submodules are up to date before building
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
+            # Always build with PVODE
             self.define("BOUT_USE_PVODE", True),
+            # Don't install gtest (resolve dependency with spack instead)
             self.define("INSTALL_GTEST", False),
         ]
         # There are problems with how CMake finds the glibc/standalone versions
