@@ -182,7 +182,6 @@ class Boutpp(CMakePackage):
             self.define("BOUT_DOWNLOAD_SUNDIALS", False),
             # Always build with MPI
             self.define("BOUT_ENABLE_MPI", True),
-            self.define("BOUT_GENERATE_FIELDOPS", False),
             # Avoid any confusion between conda and spack
             self.define("BOUT_IGNORE_CONDA_ENV",True),
             # Ensure bout submodules are up to date before building
