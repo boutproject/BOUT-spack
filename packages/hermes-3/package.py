@@ -3,7 +3,7 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack import *
+from spack.package import CMakePackage, depends_on, maintainers, variant, version
 import spack.repo
 
 
@@ -51,8 +51,6 @@ class Hermes3(CMakePackage):
         values=("MC", "MinMod"),
         multi=False,
     )
-    variant("petsc", default=False, description="Builds with PETSc support.")
-    variant("sundials", default=True, description="Builds with SUNDIALS support.")
     variant(
         "xhermes", default=True, description="Builds xhermes (required for some tests)."
     )
@@ -63,44 +61,34 @@ class Hermes3(CMakePackage):
         validator=check_pkg_available,
     )
 
-    # Always-required dependencies
-    # depends_on("adios2", type=("build", "link"))
     depends_on("cmake@3.24:", type="build")
     depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
+    depends_on("boutpp", type=("build", "link"))
     depends_on("netcdf-cxx4", type=("build", "link"))
     depends_on("py-boutdata@0.3.0:", type=("run"))
-    # Needed for BOUT++ python bindings, should be able to move this when BOUT is split into a separate package
-    depends_on("py-numpy", type=("build", "link"))
 
     # Variant-controlled dependencies
-    depends_on(
-        "petsc+hypre+mpi~debug~fortran", when="+petsc", type=("build", "link")
-    )
     depends_on("py-xhermes", when="+xhermes", type=("run"))
-    depends_on("sundials", when="+sundials", type=("build", "link"))
     if vantagereactions_pkg_available():
         depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
 
     def cmake_args(self):
-        # ON/OFF definitions controlled by variants
-        binary_def_variants = {
+        # Definitions controlled by variants
+        variant_defs = {
             "HERMES_SLOPE_LIMITER": "limiter",
-            "BOUT_USE_PETSC": "petsc",
-            "BOUT_USE_SUNDIALS": "sundials",
             "HERMES_USE_VANTAGE": "vantagereactions",
         }
-        variants_args = [
+        variant_args = [
             self.define_from_variant(def_str, var_str)
-            for def_str, var_str in binary_def_variants.items()
+            for def_str, var_str in variant_defs.items()
         ]
+
+        fixed_args = [self.define("HERMES_BUILD_BOUT", False)]
 
         # Concatenate different arg types and return
         args = []
-        args.extend(variants_args)
-        # There are problems with how CMake finds the
-        # glibc/standalone versions of gettext. See
-        # https://github.com/boutproject/hermes-3/issues/356#issuecomment-2999715879
-        args.append(self.define("BOUT_USE_NLS", False))
+        args.extend(fixed_args)
+        args.extend(variant_args)
 
         return args
