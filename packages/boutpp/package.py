@@ -78,6 +78,7 @@ class Boutpp(CMakePackage):
     variant("sundials", default=False, description="Builds with SUNDIALS support.")
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
+    variant("uuid", default=True, description="Use system UUID generator")
 
     # Fixed dependencies
     depends_on("c", type="build")
@@ -154,6 +155,7 @@ class Boutpp(CMakePackage):
             "BOUT_USE_SUNDIALS": "sundials",
             "BOUT_ENABLE_TRACK": "track",
             "BOUT_ENABLE_UMPIRE": "umpire",
+            "BOUT_USE_UUID_SYSTEM_GENERATOR": "uuid",
         }
         variant_args = [
             self.define_from_variant(def_str, var_str)
