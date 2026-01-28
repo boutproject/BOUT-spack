@@ -3,7 +3,9 @@
 #
 # SPDX-License-Identifier: (Apache-2.0 OR MIT)
 
-from spack.package import CMakePackage, depends_on, maintainers, variant, version
+from spack_repo.builtin.build_systems.cmake import CMakePackage
+from spack.error import InstallError
+from spack.package import depends_on, license, maintainers, variant, version
 import spack.repo
 
 
@@ -20,8 +22,10 @@ def check_pkg_available(_unused1, variant_name, _unused2, raise_on_notfound=True
     else:
         return True
 
+
 def vantagereactions_pkg_available():
-    return check_pkg_available("", "vantagereactions", "",raise_on_notfound=False)
+    return check_pkg_available("", "vantagereactions", "", raise_on_notfound=False)
+
 
 class Hermes3(CMakePackage):
     """A multifluid magnetized plasma simulation model.
@@ -69,11 +73,14 @@ class Hermes3(CMakePackage):
         validator=check_pkg_available,
     )
 
+    depends_on("c", type="build")
+    depends_on("cxx", type="build")
     depends_on("cmake@3.24:", type="build")
     depends_on("fftw", type=("build", "link"))
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("boutpp", type=("build", "link"))
     depends_on("netcdf-cxx4", type=("build", "link"))
+    # Need boutdata for boutupgrader script, even when not installing xhermes
     depends_on("py-boutdata@0.3.0:", type=("run"))
 
     # Variant-controlled dependencies
