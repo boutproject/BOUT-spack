@@ -1,5 +1,5 @@
-from spack import *
-
+from spack_repo.builtin.build_systems.python import PythonPackage
+from spack.package import depends_on, version
 
 class PyXhermes(PythonPackage):
     """xHermes is a post-processing package for Hermes-3 in 1D, 2D and 3D which provides automatic conversion to SI units and many useful plotting routines."""
