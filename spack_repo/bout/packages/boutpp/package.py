@@ -44,6 +44,13 @@ class Boutpp(CMakePackage):
         default="none",
         multi=True,
     )
+    # Re-define the existing build_type variant to force a default of RelWithDebInfo, rather than Release
+    variant(
+        "build_type",
+        default="RelWithDebInfo",
+        description="CMake build type",
+        values=("Debug", "Release", "RelWithDebInfo", "MinSizeRel"),
+    )
     variant("caliper", default=False, description="Builds with Caliper support.")
     variant(
         "check",
