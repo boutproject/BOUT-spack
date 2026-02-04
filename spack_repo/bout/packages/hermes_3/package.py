@@ -81,6 +81,7 @@ class Hermes3(CMakePackage):
     depends_on("py-xhermes", when="+xhermes", type=("run"))
     if vantagereactions_pkg_available():
         depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
+        depends_on("petsc+hdf5+mpi", when="+vantagereactions", type=("build", "link"))
 
     def cmake_args(self):
         # Definitions controlled by variants
