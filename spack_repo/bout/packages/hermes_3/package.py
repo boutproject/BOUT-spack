@@ -50,6 +50,14 @@ class Hermes3(CMakePackage):
     version("1.2.1", tag="v1.2.1", submodules=True)
     version("1.2.0", tag="v1.2.0", submodules=True)
 
+    # Re-define the existing build_type variant to force a default of RelWithDebInfo, rather than Release
+    variant(
+        "build_type",
+        default="RelWithDebInfo",
+        description="CMake build type",
+        values=("Debug", "Release", "RelWithDebInfo", "MinSizeRel"),
+    )
+
     variant(
         "limiter",
         default="MC",
