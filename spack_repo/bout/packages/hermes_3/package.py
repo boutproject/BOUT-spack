@@ -77,7 +77,7 @@ class Hermes3(CMakePackage):
     variant(
         "updatesubmodules",
         default=False,
-        description="update submodules during build",
+        description="Update submodules during build",
     )
 
     depends_on("c", type="build")
