@@ -74,6 +74,11 @@ class Hermes3(CMakePackage):
         description="Build Hermes-3 with VANTAGE-Reactions suppport.",
         validator=check_pkg_available,
     )
+    variant(
+        "updatesubmodules",
+        default=False,
+        description="Update submodules during build",
+    )
 
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -90,12 +95,15 @@ class Hermes3(CMakePackage):
     if vantagereactions_pkg_available():
         depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
         depends_on("petsc+hdf5+mpi", when="+vantagereactions", type=("build", "link"))
+        depends_on("py-h5py", when="+vantagereactions", type=("run"))
+        depends_on("py-petsc4py", when="+vantagereactions", type=("run"))
 
     def cmake_args(self):
         # Definitions controlled by variants
         variant_defs = {
             "HERMES_SLOPE_LIMITER": "limiter",
             "HERMES_USE_VANTAGE": "vantagereactions",
+            "HERMES_UPDATE_GIT_SUBMODULE": "updatesubmodules",
         }
         variant_args = [
             self.define_from_variant(def_str, var_str)
