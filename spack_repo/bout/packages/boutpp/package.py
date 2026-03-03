@@ -87,7 +87,7 @@ class Boutpp(CMakePackage):
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
     variant("uuid", default=True, description="Use system UUID generator")
-
+    variant("updatesubmodules", default=False, description="Update submodules during build")
     # Fixed dependencies
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -163,6 +163,7 @@ class Boutpp(CMakePackage):
             "BOUT_ENABLE_TRACK": "track",
             "BOUT_ENABLE_UMPIRE": "umpire",
             "BOUT_USE_UUID_SYSTEM_GENERATOR": "uuid",
+            "BOUT_UPDATE_GIT_SUBMODULE": "updatesubmodules",
         }
         variant_args = [
             self.define_from_variant(def_str, var_str)
