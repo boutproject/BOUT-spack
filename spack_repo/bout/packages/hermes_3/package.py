@@ -97,6 +97,8 @@ class Hermes3(CMakePackage):
         depends_on("petsc+hdf5+mpi", when="+vantagereactions", type=("build", "link"))
         depends_on("py-h5py", when="+vantagereactions", type=("run"))
         depends_on("py-petsc4py", when="+vantagereactions", type=("run"))
+        depends_on("neso-rng-toolkit", when="+vantagereactions", type=("build", "link"))
+        
 
     def cmake_args(self):
         # Definitions controlled by variants
