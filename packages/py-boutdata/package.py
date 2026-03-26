@@ -13,6 +13,10 @@ class PyBoutdata(PythonPackage):
     license("LGPL-3.0")
 
     version(
+        "0.3.0",
+        sha256="d76dd6fc1f5d916006a5e5d6db9b2835f5b5eb94c675169fd2529fc36c820323"
+    )
+    version(
         "0.2.1",
         sha256="043cddaeb38b128d2525f2005f48a5b7717ff5832a932183a4bef1d3eae389e0",
     )
