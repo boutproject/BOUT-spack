@@ -22,7 +22,9 @@ class PyXbout(PythonPackage):
         "0.3.7",
         sha256="51b6bcc888553037a623f68dccfe7755ca409801d5b2dd1b8b1ecaca78c1eff1",
     )
-    version("develop", branch="main")
+
+    # Point at latest master/main branch
+    version("master", branch="main")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))

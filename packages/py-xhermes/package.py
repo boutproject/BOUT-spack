@@ -15,7 +15,9 @@ class PyXhermes(PythonPackage):
         "0.1.0",
         sha256="3aa0ba60d06cd18adfc46132f1d8deb3cd4ce69e67ee210d491bdfd7ba7871a7",
     )
-    version("develop", branch="main")
+
+    # Point at latest master/main branch
+    version("master", branch="main")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))
