@@ -6,7 +6,7 @@ class PyXhermes(PythonPackage):
 
     homepage = "https://github.com/boutproject/xhermes"
     pypi = "xhermes/xhermes-0.1.0.tar.gz"
-    git      = "https://github.com/boutproject/xbout.git"
+    git      = "https://github.com/boutproject/xhermes.git"
 
     # Set a maintainer if submitting this package to the spack repo
     # maintainers("github_user1", "github_user2")
