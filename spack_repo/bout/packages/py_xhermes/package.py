@@ -6,6 +6,7 @@ class PyXhermes(PythonPackage):
 
     homepage = "https://github.com/boutproject/xhermes"
     pypi = "xhermes/xhermes-0.1.0.tar.gz"
+    git      = "https://github.com/boutproject/xhermes.git"
 
     # Set a maintainer if submitting this package to the spack repo
     # maintainers("github_user1", "github_user2")
@@ -20,8 +21,11 @@ class PyXhermes(PythonPackage):
         sha256="93440969181f6269955faa8ddb0818589df33e555736eb75fda39fef76092cad",
     )
 
+    # Point at latest master/main branch
+    version("master", branch="main")
+
     # Compatible Python versions
-    depends_on("python@3.6:", type=("build", "run"))
+    depends_on("python@3.9:", type=("build", "run"))
 
     # Build dependencies
     depends_on("py-setuptools", type="build")
