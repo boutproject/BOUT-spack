@@ -25,7 +25,8 @@ class PyXhermes(PythonPackage):
     #  - Can be used internally or by consuming packages when inter-release changes break something
     # Format:
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
-    version("0.1.2rc20260611", commit="cf59f47018a390b847693b426f10365502684984")
+    version("0.1.2rc20260610", commit="cf59f47018a390b847693b426f10365502684984")
+    version("0.1.2rc20260611", commit="f29a8be90820afded0e32c00ec971d9d78ca8d4b")
     
 
     # Point at latest master/main branch
