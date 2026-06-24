@@ -21,6 +21,13 @@ class PyXhermes(PythonPackage):
         sha256="93440969181f6269955faa8ddb0818589df33e555736eb75fda39fef76092cad",
     )
 
+    # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
+    #  - Can be used internally or by consuming packages when inter-release changes break something
+    # Format:
+    #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
+    version("0.1.2rc20260611", commit="cf59f47018a390b847693b426f10365502684984")
+    
+
     # Point at latest master/main branch
     version("master", branch="main")
 
