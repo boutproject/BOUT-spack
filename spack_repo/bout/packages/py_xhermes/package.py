@@ -23,6 +23,8 @@ class PyXhermes(PythonPackage):
 
     # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
     #  - Can be used internally or by consuming packages when inter-release changes break something
+    #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
+    #  - If the next release version isn't known - increment the last release version by 0.0.1
     # Format:
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("0.1.2rc20260610", commit="cf59f47018a390b847693b426f10365502684984")

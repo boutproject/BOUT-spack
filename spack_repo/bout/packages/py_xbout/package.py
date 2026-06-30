@@ -34,6 +34,8 @@ class PyXbout(PythonPackage):
 
     # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
     #  - Can be used internally or by consuming packages when inter-release changes break something
+    #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
+    #  - If the next release version isn't known - increment the last release version by 0.0.1
     # Format:
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("0.4.0rc20250925", commit="9c634a4492cd480f9883151b4f89b9d22f607727") # netcdf4=>h5netcdf
