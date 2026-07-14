@@ -43,12 +43,22 @@ class Hermes3(CMakePackage):
 
     version("develop", branch="develop")
     version("master", branch="master", submodules=True, preferred=True)
+    # Release versions
     version("1.4.1", tag="v1.4.1", submodules=True)
     version("1.4.0", tag="v1.4.0", submodules=True)
     version("1.3.1", tag="v1.3.1", submodules=True)
     version("1.3.0", tag="v1.3.0", submodules=True)
     version("1.2.1", tag="v1.2.1", submodules=True)
     version("1.2.0", tag="v1.2.0", submodules=True)
+
+    # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
+    #  - Can be used internally or by consuming packages when inter-release changes break something
+    #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
+    #  - If the next release version isn't known - increment the last release version by 0.0.1
+    # Format:
+    #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
+    version("1.4.2rc20260212", commit="1ee1c190742ed36470776d0bcf188aad33754bd0")
+    version("1.4.2rc20260615", commit="c8aa7969ee288862a5af3201db61d932ff64b377")
 
     # Re-define the existing build_type variant to force a default of RelWithDebInfo, rather than Release
     variant(
@@ -92,6 +102,9 @@ class Hermes3(CMakePackage):
 
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
+    depends_on("py-xhermes@0.1.1:", when="@1.4.2rc20260212: +xhermes")
+    depends_on("py-xhermes@0.1.2rc20260611:", when="@1.4.2rc20260615: +xhermes")
+
     if vantagereactions_pkg_available():
         depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
         depends_on("petsc+hdf5+mpi", when="+vantagereactions", type=("build", "link"))
