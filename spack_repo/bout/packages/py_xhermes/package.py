@@ -20,6 +20,10 @@ class PyXhermes(PythonPackage):
         "0.1.1",
         sha256="93440969181f6269955faa8ddb0818589df33e555736eb75fda39fef76092cad",
     )
+    version(
+        "0.2.0",
+        sha256="ad100be47af3570f2a9bffea3efcb50b4b304bdfe7700cc0453151ab3cd2148e",
+    )
 
     # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
     #  - Can be used internally or by consuming packages when inter-release changes break something
