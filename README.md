@@ -7,6 +7,6 @@ To use this, first [install Spack](https://spack.readthedocs.io/en/latest/gettin
 it to your spack repository list:
 
     git clone https://github.com/boutproject/BOUT-spack.git
-    spack repo add BOUT-spack
+    spack repo add BOUT-spack/spack_repo/bout
 
 Additional packages should now be available.
