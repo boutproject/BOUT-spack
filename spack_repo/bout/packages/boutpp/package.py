@@ -101,14 +101,11 @@ class Boutpp(CMakePackage):
         "caliper",
         "cuda",
         "fftw",
-        "hypre",
         "lapack",
         "python",
-        "raja",
         "scorep",
         "slepc",
         "sundials",
-        "umpire",
     ]
     simple_dep_versions = {"sundials": "2.6:6.7.0"}
     for dep in simple_deps:
@@ -124,6 +121,19 @@ class Boutpp(CMakePackage):
     depends_on("py-cython", type=("build", "link"), when="+python")
     depends_on("py-jinja2", type=("build", "link"), when="+python")
     depends_on("py-numpy", type=("build", "link"), when="+python")
+
+    # Umpire dependency
+    depends_on("umpire+cuda+numa~shared~examples", type=("build", "link"), when="+umpire+cuda")
+    depends_on("umpire", type=("build", "link"), when="+umpire~cuda")
+
+    # RAJA dependency
+    depends_on("raja+cuda~examples~exercises", type=("build", "link"), when="+raja+cuda")
+    depends_on("raja", type=("build", "link"), when="+raja~cuda")
+
+    # Hypre dependency
+    depends_on("hypre+mpi+cuda+umpire~shared", type=("build", "link"), when="+hypre+cuda+umpire")
+    depends_on("hypre+mpi+cuda~shared", type=("build", "link"), when="+hypre+cuda~umpire")
+    depends_on("hypre+mpi", type=("build", "link"), when="+hypre~cuda")
 
     # PETSc dependency
     #   Always use MPI and specify supported version range (across all BOUT versions)
