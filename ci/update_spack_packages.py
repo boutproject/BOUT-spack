@@ -3,6 +3,7 @@ from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -54,7 +55,7 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     for match in dep_pattern.finditer(h3_content):
         last_dep_match = match
 
-    # If no dependency exists (as is the case for py-boutdata), it should be skipped
+    # If no dependency exists (as is the case for py-xbout), it should be skipped
     if last_dep_match:
         insert_pos = last_dep_match.end()
         print(
@@ -67,7 +68,7 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
         return h3_content
 
     # Construct the 'depends_on' line
-    # Species that hermes versions [h3_version] and onwards require [dep_name]@[dep_version] or higher
+    # Specifies that hermes versions [h3_version] and onwards require [dep_name]@[dep_version] or higher
     dep_variant = _h3_variant_triggered_dependencies.get(dep_name, "")
     variant_str = f" +{dep_variant}" if dep_variant else ""
     new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")\n'
@@ -84,12 +85,10 @@ def add_package_version(pkg_class, pkg_content, existing_versions, new_version_c
     is_release = False
     tags = get_git_ref_map(pkg_class).refs_from_commit(new_version_commit)
     if tags:
-        if len(tags) > 1:
-            print(
-                f"WARNING: Multiple git tags found for commit {new_version_commit}: {tags}. Using the first one."
-            )
-        if is_release_tag(tags[0]):
-            release_tag = tags[0]
+        release_tags = [t for t in tags if is_release_tag(t)]
+        if release_tags:
+            # Prefer the highest semantic version if multiple tags exist
+            release_tag = max(release_tags, key=lambda t: Version(t.removeprefix("v")))
             is_release = True
 
     # Add either a new release version or a new rc version
@@ -164,14 +163,11 @@ def get_git_ref_map(pkg_class):
     fetcher = _git_fetcher_cache[pkg_class.git]
 
     # Use spack machinery to bare-clone the repo into a cache directory
-    cache_dir = (
-        Path(spack.paths.user_repos_cache_path)
-        / f"ci-version-cache-{abs(hash(pkg_class.git))}"
-    )
+    repo_id = hashlib.sha1(pkg_class.git.encode("utf-8")).hexdigest()[:12]
+    cache_dir = Path(spack.paths.user_repos_cache_path) / f"ci-version-cache-{repo_id}"
     if not cache_dir.exists():
         cache_dir.parent.mkdir(parents=True, exist_ok=True)
         fetcher.bare_clone(str(cache_dir))
-
     with working_directory(cache_dir):
         output = fetcher.git(
             "show-ref",
@@ -180,17 +176,34 @@ def get_git_ref_map(pkg_class):
             output=str,
         )
 
+    # Parse the output of `git show-ref`
     ref_to_commit = {}
-    commit_to_refs = defaultdict(list)
+    tag_refs = {}
+    peeled_tag_refs = {}
 
+    # Put heads straight in to the forward map (ref->commit) but discriminate between tags and 'peeled' tags
     for line in output.splitlines():
         commit, ref = line.split()
 
-        short_ref = ref.removeprefix("refs/tags/")
-        short_ref = short_ref.removeprefix("refs/heads/")
+        if ref.startswith("refs/heads/"):
+            ref_to_commit[ref.removeprefix("refs/heads/")] = commit
+        elif ref.startswith("refs/tags/"):
+            short_ref = ref.removeprefix("refs/tags/")
+            if short_ref.endswith("^{}"):
+                peeled_tag_refs[short_ref.removesuffix("^{}")] = commit
+            else:
+                tag_refs[short_ref] = commit
 
-        ref_to_commit[short_ref] = commit
-        commit_to_refs[commit].append(short_ref)
+    # Add tag refs to the forward map, preferring peeled tags where they exist
+    for tag_name, commit in tag_refs.items():
+        ref_to_commit[tag_name] = peeled_tag_refs.get(tag_name, commit)
+    for tag_name, commit in peeled_tag_refs.items():
+        ref_to_commit[tag_name] = commit
+
+    # Create the reverse map
+    commit_to_refs = defaultdict(list)
+    for ref_name, commit in ref_to_commit.items():
+        commit_to_refs[commit].append(ref_name)
 
     # Create the two-way mapper
     result = GitRefMapper(
@@ -222,15 +235,18 @@ def get_rc_version_tag(existing_versions):
     """
     Given a dict of existing versions, return the next rc version tag.
     """
-    # Get major, minor, patch for the latest released version
-    released_versions = [
-        m["version"]
-        for m in existing_versions.values()
-        if m["type"] in ["sha256", "tag"]
+    # Get major, minor, patch for the latest tagged release version
+    tagged_release_versions = [
+        commit_map["version"]
+        for commit_map in existing_versions.values()
+        if commit_map["type"] == "tag"
     ]
-
-    latest_released_version = max(released_versions, key=Version)
-    major, minor, patch = map(int, latest_released_version.split("."))
+    if not tagged_release_versions:
+        raise RuntimeError(
+            "No released (tag/sha256) versions found; cannot derive next rc version."
+        )
+    latest_tagged_release_version = max(tagged_release_versions, key=Version)
+    major, minor, patch = map(int, latest_tagged_release_version.split("."))
 
     # rc version is current version with patch incremented + "rcYYYYMMDD" suffix
     date_str = datetime.now().strftime("%Y%m%d")
@@ -250,19 +266,21 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
 
     # This should never be true, but just in case...
     if new_version_commit in pkg_content:
-        return pkg_content
+        return pkg_content, new_version
 
-    # Look for existing RC versions
+    # Match RC version lines without consuming the newline after them.
+    # Allow trailing comments
     rc_pattern = re.compile(
-        r'^\s*version\("\d+\.\d+\.\d+rc\d{8}".*?\)\s*$',
+        r'^[ \t]*version\("\d+\.\d+\.\d+rc\d{8}".*?\)\s*(?:#.*)?$',
         re.MULTILINE,
     )
     matches = list(rc_pattern.finditer(pkg_content))
 
     if matches:
-        # If there are existing RC versions, insert after the last one
+        # Insert after the matched line break so the new version always lands on its own line.
         last = matches[-1]
-        insert_pos = last.end()
+        line_end = pkg_content.find("\n", last.end())
+        insert_pos = line_end + 1 if line_end >= 0 else len(pkg_content)
     else:
         # Otherwise, insert on the first new line after the standardised RC version comment
         marker = "next_release_version"
@@ -273,7 +291,14 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
 
         insert_pos = pkg_content.find("\n", preamble_end_pos) + 1
 
-    return pkg_content[:insert_pos] + version_line + "\n" + pkg_content[
+    # Edge case where the new line is being inserted at EOF and the file has no trailing newline
+    line_prefix = (
+        "\n"
+        if insert_pos == len(pkg_content) and not pkg_content.endswith("\n")
+        else ""
+    )
+
+    return pkg_content[:insert_pos] + line_prefix + version_line + "\n" + pkg_content[
         insert_pos:
     ], new_version
 
@@ -300,7 +325,7 @@ def insert_package_release_version(pkg_content, tag):
     versions = re.findall(r'"([^"]+)"', list_body)
 
     if release_version in versions:
-        return pkg_content
+        return pkg_content, release_version
 
     versions.append(release_version)
     versions.sort(key=Version)

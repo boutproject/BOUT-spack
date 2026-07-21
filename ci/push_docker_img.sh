@@ -9,7 +9,7 @@ img_tag="ghcr.io/boutproject/bout-spack-ci:$img_version"
 if ! grep -q '"ghcr.io"' "${HOME}/.docker/config.json" 2>/dev/null; then
     echo "WARNING: You don't appear to be logged in to ghcr.io. Image push might fail."
     echo "Try:"
-    echo "  1. Set GITHUB_PAT to an access token with write:packages scope", then
+    echo "  1. Set GITHUB_PAT to an access token with write:packages scope, then"
     echo "  2. echo \"\$GITHUB_PAT\" | docker login ghcr.io --username <github username> --password-stdin"
     echo
 fi
