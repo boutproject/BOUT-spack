@@ -46,7 +46,7 @@ class PyXbout(PythonPackage):
 
 
     # Point at latest master/main branch
-    version("master", branch="main")
+    version("master", branch="master")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))
