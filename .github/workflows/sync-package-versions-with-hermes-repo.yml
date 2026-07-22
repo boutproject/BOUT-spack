@@ -59,7 +59,6 @@ jobs:
       - name: Clean up temporary files
         run: |
           rm -rf "$HERMES_DIR"
-          jq . "$COMMITS_JSON"
           rm -f "$COMMITS_JSON"
 
       # File the PR
