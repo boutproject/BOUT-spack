@@ -18,8 +18,8 @@ class PyXbout(PythonPackage):
 
     # license("Apache-2.0")
 
-    # Release version git tags
-    tagged_versions = [
+    # Older versions had tags "x.y.z" rather than "vx.y.z"
+    oldstyle_tagged_versions = [
         "0.3.0",
         "0.3.1",
         "0.3.2",
@@ -27,6 +27,12 @@ class PyXbout(PythonPackage):
         "0.3.4",
         "0.3.5",
         "0.3.6",
+    ]
+    for v in oldstyle_tagged_versions:
+        version(v, tag=v)
+
+    # Standard "vx.y.z" tagged versions
+    tagged_versions = [
         "0.3.7",
         "0.3.8",
         "0.4.0",

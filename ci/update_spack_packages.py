@@ -313,12 +313,12 @@ def insert_package_release_version(pkg_content, tag):
 
     # Locate tagged_versions list
     pattern = re.compile(
-        r"(tagged_versions\s*=\s*\[)(.*?)(\])",
-        re.DOTALL,
+        r"(^[ \t]*tagged_versions[ \t]*=[ \t]*\[)(.*?)(^[ \t]*\])",
+        re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(pkg_content)
     if not match:
-        raise RuntimeError("Could not find tagged_versions block")
+        raise RuntimeError("Could not find tagged_versions list")
     list_body = match.group(2)
 
     # Extract existing versions
