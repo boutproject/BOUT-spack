@@ -42,7 +42,7 @@ class Boutpp(CMakePackage):
         description="Choose whether to build the standard set of tests ('default'), the complete set ('all'), or none at all ('none').",
         values=("all", "default", "none"),
         default="none",
-        multi=True,
+        multi=False,
     )
     variant("caliper", default=False, description="Builds with Caliper support.")
     variant(
@@ -50,7 +50,7 @@ class Boutpp(CMakePackage):
         description="Sets the CHECK variable which controls the level of internal runtime checking.",
         values=("0", "1", "2", "3", "4"),
         default="2",
-        multi=True,
+        multi=False,
     )
     variant("cuda", default=False, description="Builds with CUDA support.")
     variant("fftw", default=True, description="Builds with FFTW support.")
