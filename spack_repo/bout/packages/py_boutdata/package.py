@@ -35,6 +35,7 @@ class PyBoutdata(PythonPackage):
     #  - If the next release version isn't known - increment the last release version by 0.0.1
     # Format (don't change the line below, as it is used in CI to update package versions!)
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
+    version("0.4.1rc20260727", commit="894e7f2de3ac1a40dd0ea5c865399edcf9ae5f19")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))
