@@ -11,39 +11,48 @@ class PyXbout(PythonPackage):
     """xBOUT provides an interface for collecting the output data from a BOUT++ simulation into an xarray dataset in an efficient and scalable way, as well as accessor methods for common BOUT++ analysis and plotting tasks."""
 
     homepage = "https://github.com/boutproject/xBOUT"
-    pypi = "xbout/xbout-0.3.7.tar.gz"
-    git      = "https://github.com/boutproject/xbout.git"
+    git = "https://github.com/boutproject/xbout.git"
 
     # Set a maintainer if submitting this package to the spack repo
     # maintainers("github_user1", "github_user2")
 
-    #license("Apache-2.0")
+    # license("Apache-2.0")
 
-    version(
+    # Older versions had tags "x.y.z" rather than "vx.y.z"
+    oldstyle_tagged_versions = [
+        "0.3.0",
+        "0.3.1",
+        "0.3.2",
+        "0.3.3",
+        "0.3.4",
+        "0.3.5",
+        "0.3.6",
+    ]
+    for v in oldstyle_tagged_versions:
+        version(v, tag=v)
+
+    # Standard "vx.y.z" tagged versions
+    tagged_versions = [
         "0.3.7",
-        sha256="51b6bcc888553037a623f68dccfe7755ca409801d5b2dd1b8b1ecaca78c1eff1",
-    )
-    version(
         "0.3.8",
-        sha256="9d17f3425b46304d837dff514b3d1541f85e5de69eaa43629c1806220b4a0b26",
-    )
-    version(
         "0.4.0",
-        sha256="1a118823550e5db0ec239bee2f61a55545eb1643035082e5d4919aa5390cc847")
+    ]
 
+    for v in tagged_versions:
+        version(v, tag=f"v{v}")
 
     # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
     #  - Can be used internally or by consuming packages when inter-release changes break something
     #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
     #  - If the next release version isn't known - increment the last release version by 0.0.1
-    # Format:
+    # Format (don't change the line below, as it is used in CI to update package versions!)
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("0.4.0rc20250925", commit="9c634a4492cd480f9883151b4f89b9d22f607727") # netcdf4=>h5netcdf
     version("0.4.0rc20260211", commit="afac4967c662e1c75b549bf585e15a6330548d8c") # h5py
 
 
     # Point at latest master/main branch
-    version("master", branch="main")
+    version("master", branch="master")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))

@@ -28,6 +28,13 @@ class Boutpp(CMakePackage):
     for v in tagged_versions:
         version(v, tag=f"v{v}", submodules=True)
 
+    # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
+    #  - Can be used internally or by consuming packages when inter-release changes break something
+    #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
+    #  - If the next release version isn't known - increment the last release version by 0.0.1
+    # Format (don't change the line below, as it is used in CI to update package versions!)
+    #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
+
     # Patches
     patch("fix_thirdparty_cmake_v5.0.0.patch", when="@5.0.0")
     patch("fix_thirdparty_cmake_v5.1.x.patch", when="@5.1")

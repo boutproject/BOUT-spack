@@ -43,19 +43,17 @@ class Hermes3(CMakePackage):
 
     version("develop", branch="develop")
     version("master", branch="master", submodules=True, preferred=True)
+
     # Release versions
-    version("1.4.1", tag="v1.4.1", submodules=True)
-    version("1.4.0", tag="v1.4.0", submodules=True)
-    version("1.3.1", tag="v1.3.1", submodules=True)
-    version("1.3.0", tag="v1.3.0", submodules=True)
-    version("1.2.1", tag="v1.2.1", submodules=True)
-    version("1.2.0", tag="v1.2.0", submodules=True)
+    tagged_versions = ["1.2.0", "1.2.1", "1.3.0", "1.3.1", "1.4.0", "1.4.1"]
+    for v in tagged_versions:
+        version(v, tag=f"v{v}", submodules=True)
 
     # Treat intermediate versions, mapped to specific Git commits, as release candidates ('rc' suffixes)
     #  - Can be used internally or by consuming packages when inter-release changes break something
     #  - By convention, commit hashes point to master; i.e. the commit where the breaking change was merged in
     #  - If the next release version isn't known - increment the last release version by 0.0.1
-    # Format:
+    # Format (don't change the line below, as it is used in CI to update package versions!)
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("1.4.2rc20260212", commit="1ee1c190742ed36470776d0bcf188aad33754bd0")
     version("1.4.2rc20260615", commit="c8aa7969ee288862a5af3201db61d932ff64b377")
