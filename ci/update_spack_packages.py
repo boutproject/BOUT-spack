@@ -46,9 +46,9 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     Add a new depends_on(...) statement to the hermes-3 package.py file for [dep_name]@[dep_version].
     """
 
-    # Insert the new depends_on(...) line after the last existing one
+    # Find any 'depends_on' lines for <dep_name>
     dep_pattern = re.compile(
-        rf'^\s*depends_on\("{dep_name}".*?\)\s*$',
+        rf'^\s*depends_on\("{re.escape(dep_name)}.*$',
         re.MULTILINE,
     )
     last_dep_match = None
