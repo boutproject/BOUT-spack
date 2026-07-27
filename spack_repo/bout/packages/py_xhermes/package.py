@@ -29,6 +29,7 @@ class PyXhermes(PythonPackage):
     version("0.1.2rc20260611", commit="f29a8be90820afded0e32c00ec971d9d78ca8d4b")
 
     # Point at latest master/main branch
+    version("0.2.1rc20260727", commit="84ddc4f8eb5ed9f0873c72d7bf41a0c824be2dee")
     version("master", branch="main")
 
     # Compatible Python versions
