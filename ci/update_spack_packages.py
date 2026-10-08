@@ -71,7 +71,7 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     # Specifies that hermes versions [h3_version] and onwards require [dep_name]@[dep_version] or higher
     dep_variant = _h3_variant_triggered_dependencies.get(dep_name, "")
     variant_str = f" +{dep_variant}" if dep_variant else ""
-    new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")\n'
+    new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")'
     h3_content = h3_content[:insert_pos] + "\n" + new_dep_line + h3_content[insert_pos:]
     return h3_content
 
@@ -271,7 +271,7 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
     # Match RC version lines without consuming the newline after them.
     # Allow trailing comments
     rc_pattern = re.compile(
-        r'^[ \t]*version\("\d+\.\d+\.\d+rc\d{8}".*?\)\s*(?:#.*)?$',
+        r'^[ \t]*version\("\d+\.\d+\.\d+rc\d{8}".*?\)[ \t]*(?:#.*)?$',
         re.MULTILINE,
     )
     matches = list(rc_pattern.finditer(pkg_content))
