@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -24,17 +23,45 @@ _repo_ref_cache = {}
 @dataclass
 class GitRefMapper:
     """
-    Bi-directional map between git references (branches/tags) and commit hashes.
+    A data class that maps git references to commit hashes, storing an additional, separate mapping
+    of tag->commit.
     """
 
     ref_to_commit: dict[str, str]
-    commit_to_refs: dict[str, list[str]]
+    tag_to_commit: dict[str, str]
 
-    def commit_from_ref(self, ref):
-        return self.ref_to_commit.get(ref, None)
+    @classmethod
+    def from_show_ref(cls, show_ref_output):
+        """Build mappings from `git show-ref --dereference` output."""
+        ref_to_commit = {}
+        tag_refs = {}
+        peeled_tag_refs = {}
 
-    def refs_from_commit(self, commit):
-        return self.commit_to_refs.get(commit, [])
+        # Put heads straight into the (ref->commit) map, but discriminate between tags and 'peeled' tags
+        for line in show_ref_output.splitlines():
+            commit, ref = line.split()
+
+            if ref.startswith("refs/heads/"):
+                ref_to_commit[ref.removeprefix("refs/heads/")] = commit
+            elif ref.startswith("refs/tags/"):
+                short_ref = ref.removeprefix("refs/tags/")
+                if short_ref.endswith("^{}"):
+                    peeled_tag_refs[short_ref.removesuffix("^{}")] = commit
+                else:
+                    tag_refs[short_ref] = commit
+
+        # Add tag refs to the map
+        for tag_name, commit in tag_refs.items():
+            ref_to_commit[tag_name] = commit
+        # Add peeled tags to the map (overwrites regular tag refs)
+        for tag_name, commit in peeled_tag_refs.items():
+            ref_to_commit[tag_name] = commit
+
+        # Return git ref->commit and tag->commit maps.
+        return cls(
+            ref_to_commit=ref_to_commit,
+            tag_to_commit={tag: ref_to_commit[tag] for tag in tag_refs},
+        )
 
 
 # ==============================================================================
@@ -71,37 +98,9 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     # Specifies that hermes versions [h3_version] and onwards require [dep_name]@[dep_version] or higher
     dep_variant = _h3_variant_triggered_dependencies.get(dep_name, "")
     variant_str = f" +{dep_variant}" if dep_variant else ""
-    new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")\n'
+    new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")'
     h3_content = h3_content[:insert_pos] + "\n" + new_dep_line + h3_content[insert_pos:]
     return h3_content
-
-
-def add_package_version(pkg_class, pkg_content, existing_versions, new_version_commit):
-    """
-    Add a new version(...) line to [pkg_content] at commit [new_version_commit].
-    """
-    # Does this commit correspond to a release version?
-    # i.e. Does this commit have a git tag, and is that tag 'version-like'?
-    is_release = False
-    tags = get_git_ref_map(pkg_class).refs_from_commit(new_version_commit)
-    if tags:
-        release_tags = [t for t in tags if is_release_tag(t)]
-        if release_tags:
-            # Prefer the highest semantic version if multiple tags exist
-            release_tag = max(release_tags, key=lambda t: Version(t.removeprefix("v")))
-            is_release = True
-
-    # Add either a new release version or a new rc version
-    if is_release:
-        pkg_content, new_version = insert_package_release_version(
-            pkg_content, release_tag
-        )
-    else:
-        pkg_content, new_version = insert_package_rc_version(
-            pkg_content, existing_versions, new_version_commit
-        )
-
-    return pkg_content, new_version
 
 
 # ------------------------------------------------------------------------------
@@ -131,7 +130,7 @@ def extract_version_commits(pkg_name, pkg_class):
                         f"v{str(version)}",
                     ]
                     for ref in candidate_refs:
-                        commit = get_git_ref_map(pkg_class).commit_from_ref(ref)
+                        commit = get_git_ref_map(pkg_class).ref_to_commit.get(ref)
                         if commit is not None:
                             break
                 if commit is not None:
@@ -169,52 +168,81 @@ def get_git_ref_map(pkg_class):
         cache_dir.parent.mkdir(parents=True, exist_ok=True)
         fetcher.bare_clone(str(cache_dir))
     with working_directory(cache_dir):
-        output = fetcher.git(
+        # Run fetch again to ensure refs in cached repo are up to date
+        fetcher.git(
+            "fetch",
+            "--prune",
+            "origin",
+            "+refs/heads/*:refs/heads/*",
+            "+refs/tags/*:refs/tags/*",
+        )
+        show_ref_output = fetcher.git(
             "show-ref",
+            "--dereference",
             "--tags",
             "--heads",
             output=str,
         )
 
-    # Parse the output of `git show-ref`
-    ref_to_commit = {}
-    tag_refs = {}
-    peeled_tag_refs = {}
-
-    # Put heads straight in to the forward map (ref->commit) but discriminate between tags and 'peeled' tags
-    for line in output.splitlines():
-        commit, ref = line.split()
-
-        if ref.startswith("refs/heads/"):
-            ref_to_commit[ref.removeprefix("refs/heads/")] = commit
-        elif ref.startswith("refs/tags/"):
-            short_ref = ref.removeprefix("refs/tags/")
-            if short_ref.endswith("^{}"):
-                peeled_tag_refs[short_ref.removesuffix("^{}")] = commit
-            else:
-                tag_refs[short_ref] = commit
-
-    # Add tag refs to the forward map, preferring peeled tags where they exist
-    for tag_name, commit in tag_refs.items():
-        ref_to_commit[tag_name] = peeled_tag_refs.get(tag_name, commit)
-    for tag_name, commit in peeled_tag_refs.items():
-        ref_to_commit[tag_name] = commit
-
-    # Create the reverse map
-    commit_to_refs = defaultdict(list)
-    for ref_name, commit in ref_to_commit.items():
-        commit_to_refs[commit].append(ref_name)
-
-    # Create the two-way mapper
-    result = GitRefMapper(
-        ref_to_commit=dict(ref_to_commit),
-        commit_to_refs=dict(commit_to_refs),
-    )
+    result = GitRefMapper.from_show_ref(show_ref_output)
 
     # Cache the mapper
     _repo_ref_cache[pkg_class.git] = result
 
     return result
+
+
+# ------------------------------------------------------------------------------
+def add_missing_releases(pkg_name, pkg_class, pkg_content, version_commits):
+    """Discover tagged release versions (independent of the current Hermes dependency pins) and add
+    them to the package file if they don't already exist.
+
+    Versions earlier than the minimum recorded in the package are assumed to be unsupported and are
+    ignored. Add release commits (new and existing) to the version_commits map.
+
+    N.B. If a version was previously recorded as a release candidate, but tagged later, the release
+    version will overwrite it.
+    """
+    # Identify the oldest recorded release as the support floor.
+    existing_releases = {
+        str(version) for version in pkg_class.versions if is_release_tag(str(version))
+    }
+    # All packages should have at least one release
+    if not existing_releases:
+        raise RuntimeError(
+            f"No release versions found for {pkg_name}; cannot determine support floor."
+        )
+    oldest_release = min(map(Version, existing_releases))
+
+    # Get release tags and add any that aren't already in the package
+    tags = get_git_ref_map(pkg_class).tag_to_commit
+    release_tags = sorted(
+        (tag for tag in tags if is_release_tag(tag)),
+        key=lambda t: (Version(t.removeprefix("v")), t),
+    )
+    for tag in release_tags:
+        release_version = tag.removeprefix("v")
+        # Skip versions older than the support floor
+        if Version(release_version) < oldest_release:
+            continue
+        # Add new version
+        if release_version not in existing_releases:
+            pkg_content, _ = insert_package_release_version(pkg_content, tag)
+            existing_releases.add(release_version)
+            print(
+                f"ADDED release [{release_version}] of [{pkg_name}] from tag [{tag}]."
+            )
+        # Add the release commit to version_commits
+        # Overwrite an existing entry if it's not a tag or if the discoverd release is newer.
+        commit = tags[tag]
+        previous = version_commits.get(commit)
+        if (
+            previous is None
+            or previous["type"] != "tag"
+            or Version(previous["version"]) < Version(release_version)
+        ):
+            version_commits[commit] = {"version": release_version, "type": "tag"}
+    return pkg_content
 
 
 # ------------------------------------------------------------------------------
@@ -271,7 +299,7 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
     # Match RC version lines without consuming the newline after them.
     # Allow trailing comments
     rc_pattern = re.compile(
-        r'^[ \t]*version\("\d+\.\d+\.\d+rc\d{8}".*?\)\s*(?:#.*)?$',
+        r'^[ \t]*version\("\d+\.\d+\.\d+rc\d{8}".*?\)[ \t]*(?:#.*)?$',
         re.MULTILINE,
     )
     matches = list(rc_pattern.finditer(pkg_content))
@@ -306,18 +334,26 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
 # ------------------------------------------------------------------------------
 def insert_package_release_version(pkg_content, tag):
     """
-    Insert a new release version into tagged_versions = [...]
+    Insert a new release version.
+    (Add to the 'tagged_versions' or 'oldstyle_tagged_versions' lists in each package, as appropriate).
     """
 
     release_version = tag.removeprefix("v")
 
-    # Locate tagged_versions list
+    # The tagged_versions loop assumes a leading 'v'; unprefixed tags use the oldstyle list.
+    list_name = "tagged_versions" if tag.startswith("v") else "oldstyle_tagged_versions"
+
+    # Locate the appropriate tagged_versions list
     pattern = re.compile(
-        r"(^[ \t]*tagged_versions[ \t]*=[ \t]*\[)(.*?)(^[ \t]*\])",
+        rf"(^[ \t]*{list_name}[ \t]*=[ \t]*\[)(.*?)(\])",
         re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(pkg_content)
     if not match:
+        if list_name == "oldstyle_tagged_versions":
+            raise RuntimeError(
+                "Release version string wasn't v-prefixed, and no alternative formats are supported in the package file."
+            )
         raise RuntimeError("Could not find tagged_versions list")
     list_body = match.group(2)
 
@@ -331,7 +367,7 @@ def insert_package_release_version(pkg_content, tag):
     versions.sort(key=Version)
 
     new_body = "".join(f'\n        "{v}",' for v in versions)
-    replacement = f"{match.group(1)}{new_body}\n    {match.group(3)}"
+    replacement = f"{match.group(1)}{new_body}\n    ]"
 
     return pkg_content[: match.start()] + replacement + pkg_content[
         match.end() :
@@ -384,10 +420,10 @@ def main():
     args = parser.parse_args()
 
     with open(args.commits_file) as f:
-        commits = json.load(f)
+        pinned_commits = json.load(f)
 
     # Get all the package classes
-    pkg_classes = get_pkg_classes(commits.keys())
+    pkg_classes = get_pkg_classes(pinned_commits.keys())
 
     # Read all the package files
     all_content = read_pkg_files(pkg_classes)
@@ -398,20 +434,37 @@ def main():
         for pkg_name, pkg_class in pkg_classes.items()
     }
 
+    # Keep track of commits that were already registered before new releases were added
+    version_commits_excluding_new_releases = {
+        pkg_name: set(version_commits)
+        for pkg_name, version_commits in all_version_commits.items()
+    }
+
+    # Add any release versions that don't already exist in the package files.
+    for pkg_name, pkg_class in pkg_classes.items():
+        all_content[pkg_name] = add_missing_releases(
+            pkg_name, pkg_class, all_content[pkg_name], all_version_commits[pkg_name]
+        )
+
     # Separate the hermes commit; everything else is a dependency
-    hermes_commit = commits.pop("hermes-3")
+    hermes_commit = pinned_commits.pop("hermes-3")
 
     # Add any new versions of dependencies to their respective package.py files
     new_dependency_versions = {}
-    for dep_name, commit in commits.items():
+    for dep_name, commit in pinned_commits.items():
         pkg_version_commits = all_version_commits.get(dep_name, {})
         if commit in pkg_version_commits:
             print(
                 f"Commit [{commit}] of [{dep_name}] already registered as version [{pkg_version_commits[commit]['version']}]."
             )
+            # Newly discovered releases have already been added to the package files, but
+            # dependencies may still need to be updated.
+            if commit not in version_commits_excluding_new_releases[dep_name]:
+                new_dependency_versions[dep_name] = pkg_version_commits[commit][
+                    "version"
+                ]
         else:
-            all_content[dep_name], dep_version = add_package_version(
-                pkg_classes[dep_name],
+            all_content[dep_name], dep_version = insert_package_rc_version(
                 all_content[dep_name],
                 pkg_version_commits,
                 commit,
@@ -423,21 +476,23 @@ def main():
 
     # Add depends_on(...) statements to the hermes package file if necessary
     if new_dependency_versions:
-        existing_hermes_versions = extract_version_commits(
-            "hermes-3", pkg_classes["hermes-3"]
-        )
-        # If there are new dependencies, we need a new hermes version at the current commit
-        print(f"Adding new hermes-3 version at commit [{hermes_commit}]")
-        all_content["hermes-3"], new_hermes_version = add_package_version(
-            pkg_classes["hermes-3"],
-            all_content["hermes-3"],
-            existing_hermes_versions,
-            hermes_commit,
-        )
+        existing_hermes_versions = all_version_commits["hermes-3"]
+        if hermes_commit in existing_hermes_versions:
+            # The pinned hermes commit is already registered in the package file
+            hermes_version = existing_hermes_versions[hermes_commit]["version"]
+        else:
+            # The pinned hermes commit is new - insert that first before resolving dependencies
+            # N.B. This also means it must be an rc version, releases have already been added
+            print(f"Adding new hermes-3 version at commit [{hermes_commit}]")
+            all_content["hermes-3"], hermes_version = insert_package_rc_version(
+                all_content["hermes-3"],
+                existing_hermes_versions,
+                hermes_commit,
+            )
 
         for dep_name, dep_version in new_dependency_versions.items():
             all_content["hermes-3"] = add_hermes_dependency(
-                all_content["hermes-3"], new_hermes_version, dep_name, dep_version
+                all_content["hermes-3"], hermes_version, dep_name, dep_version
             )
 
     # Write out all the modified package.py files

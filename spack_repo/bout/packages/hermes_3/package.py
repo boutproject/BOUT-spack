@@ -57,8 +57,8 @@ class Hermes3(CMakePackage):
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("1.4.2rc20260212", commit="1ee1c190742ed36470776d0bcf188aad33754bd0")
     version("1.4.2rc20260615", commit="c8aa7969ee288862a5af3201db61d932ff64b377")
-
     version("1.4.2rc20260727", commit="a1c3ba381f87686d5a6ee8bf52226886ece6bb1d")
+
     variant(
         "limiter",
         default="MC",
@@ -94,13 +94,11 @@ class Hermes3(CMakePackage):
     depends_on("py-boutdata@0.3.0:", type=("run"))
     depends_on("py-boutdata@0.4.1rc20260727:", when="@1.4.2rc20260727:")
 
-
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
     depends_on("py-xhermes@0.1.1:", when="@1.4.2rc20260212: +xhermes")
     depends_on("py-xhermes@0.1.2rc20260611:", when="@1.4.2rc20260615: +xhermes")
     depends_on("py-xhermes@0.2.1rc20260727:", when="@1.4.2rc20260727: +xhermes")
-
 
     if vantagereactions_pkg_available():
         depends_on("vantagereactions", when="+vantagereactions", type=("build", "link"))
@@ -108,7 +106,6 @@ class Hermes3(CMakePackage):
         depends_on("py-h5py", when="+vantagereactions", type=("run"))
         depends_on("py-petsc4py", when="+vantagereactions", type=("run"))
         depends_on("neso-rng-toolkit", when="+vantagereactions", type=("build", "link"))
-        
 
     def cmake_args(self):
         # Definitions controlled by variants
