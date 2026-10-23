@@ -419,10 +419,10 @@ def main():
     args = parser.parse_args()
 
     with open(args.commits_file) as f:
-        commits = json.load(f)
+        pinned_commits = json.load(f)
 
     # Get all the package classes
-    pkg_classes = get_pkg_classes(commits.keys())
+    pkg_classes = get_pkg_classes(pinned_commits.keys())
 
     # Read all the package files
     all_content = read_pkg_files(pkg_classes)
@@ -433,6 +433,12 @@ def main():
         for pkg_name, pkg_class in pkg_classes.items()
     }
 
+    # Keep track of commits that were already registered before new releases were added
+    version_commits_excluding_new_releases = {
+        pkg_name: set(version_commits)
+        for pkg_name, version_commits in all_version_commits.items()
+    }
+
     # Add any release versions that don't already exist in the package files.
     for pkg_name, pkg_class in pkg_classes.items():
         all_content[pkg_name] = add_missing_releases(
@@ -440,16 +446,22 @@ def main():
         )
 
     # Separate the hermes commit; everything else is a dependency
-    hermes_commit = commits.pop("hermes-3")
+    hermes_commit = pinned_commits.pop("hermes-3")
 
     # Add any new versions of dependencies to their respective package.py files
     new_dependency_versions = {}
-    for dep_name, commit in commits.items():
+    for dep_name, commit in pinned_commits.items():
         pkg_version_commits = all_version_commits.get(dep_name, {})
         if commit in pkg_version_commits:
             print(
                 f"Commit [{commit}] of [{dep_name}] already registered as version [{pkg_version_commits[commit]['version']}]."
             )
+            # Newly discovered releases have already been added to the package files, but
+            # dependencies may still need to be updated.
+            if commit not in version_commits_excluding_new_releases[dep_name]:
+                new_dependency_versions[dep_name] = pkg_version_commits[commit][
+                    "version"
+                ]
         else:
             all_content[dep_name], dep_version = insert_package_rc_version(
                 all_content[dep_name],
@@ -463,16 +475,19 @@ def main():
 
     # Add depends_on(...) statements to the hermes package file if necessary
     if new_dependency_versions:
-        existing_hermes_versions = extract_version_commits(
-            "hermes-3", pkg_classes["hermes-3"]
-        )
-        # If there are new dependencies, we need a new hermes version at the current commit
-        print(f"Adding new hermes-3 version at commit [{hermes_commit}]")
-        all_content["hermes-3"], hermes_version = insert_package_rc_version(
-            all_content["hermes-3"],
-            existing_hermes_versions,
-            hermes_commit,
-        )
+        existing_hermes_versions = all_version_commits["hermes-3"]
+        if hermes_commit in existing_hermes_versions:
+            # The pinned hermes commit is already registered in the package file
+            hermes_version = existing_hermes_versions[hermes_commit]["version"]
+        else:
+            # The pinned hermes commit is new - insert that first before resolving dependencies
+            # N.B. This also means it must be an rc version, releases have already been added
+            print(f"Adding new hermes-3 version at commit [{hermes_commit}]")
+            all_content["hermes-3"], hermes_version = insert_package_rc_version(
+                all_content["hermes-3"],
+                existing_hermes_versions,
+                hermes_commit,
+            )
 
         for dep_name, dep_version in new_dependency_versions.items():
             all_content["hermes-3"] = add_hermes_dependency(
