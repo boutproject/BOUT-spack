@@ -102,38 +102,6 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     return h3_content
 
 
-def add_package_version(pkg_class, pkg_content, existing_versions, new_version_commit):
-    """
-    Add a new version(...) line to [pkg_content] at commit [new_version_commit].
-    """
-    # Does this commit correspond to a release version?
-    # i.e. Does this commit have a git tag, and is that tag 'version-like'?
-    is_release = False
-    tags = [
-        tag
-        for tag, commit in get_git_ref_map(pkg_class).tag_to_commit.items()
-        if commit == new_version_commit
-    ]
-    if tags:
-        release_tags = [t for t in tags if is_release_tag(t)]
-        if release_tags:
-            # Prefer the highest semantic version if multiple tags exist
-            release_tag = max(release_tags, key=lambda t: Version(t.removeprefix("v")))
-            is_release = True
-
-    # Add either a new release version or a new rc version
-    if is_release:
-        pkg_content, new_version = insert_package_release_version(
-            pkg_content, release_tag
-        )
-    else:
-        pkg_content, new_version = insert_package_rc_version(
-            pkg_content, existing_versions, new_version_commit
-        )
-
-    return pkg_content, new_version
-
-
 # ------------------------------------------------------------------------------
 def extract_version_commits(pkg_name, pkg_class):
     """
@@ -221,6 +189,59 @@ def get_git_ref_map(pkg_class):
     _repo_ref_cache[pkg_class.git] = result
 
     return result
+
+
+# ------------------------------------------------------------------------------
+def add_missing_releases(pkg_name, pkg_class, pkg_content, version_commits):
+    """Discover tagged release versions (independent of the current Hermes dependency pins) and add
+    them to the package file if they don't already exist.
+
+    Versions earlier than the minimum recorded in the package are assumed to be unsupported and are
+    ignored. Add release commits (new and existing) to the version_commits map.
+
+    N.B. If a version was previously recorded as a release candidate, but tagged later, the release
+    version will overwrite it.
+    """
+    # Identify the oldest recorded release as the support floor.
+    existing_releases = {
+        str(version) for version in pkg_class.versions if is_release_tag(str(version))
+    }
+    # All packages should have at least one release
+    if not existing_releases:
+        raise RuntimeError(
+            f"No release versions found for {pkg_name}; cannot determine support floor."
+        )
+    oldest_release = min(map(Version, existing_releases))
+
+    # Get release tags and add any that aren't already in the package
+    tags = get_git_ref_map(pkg_class).tag_to_commit
+    release_tags = sorted(
+        (tag for tag in tags if is_release_tag(tag)),
+        key=lambda t: (Version(t.removeprefix("v")), t),
+    )
+    for tag in release_tags:
+        release_version = tag.removeprefix("v")
+        # Skip versions older than the support floor
+        if Version(release_version) < oldest_release:
+            continue
+        # Add new version
+        if release_version not in existing_releases:
+            pkg_content, _ = insert_package_release_version(pkg_content, tag)
+            existing_releases.add(release_version)
+            print(
+                f"ADDED release [{release_version}] of [{pkg_name}] from tag [{tag}]."
+            )
+        # Add the release commit to version_commits
+        # Overwrite an existing entry if it's not a tag or if the discoverd release is newer.
+        commit = tags[tag]
+        previous = version_commits.get(commit)
+        if (
+            previous is None
+            or previous["type"] != "tag"
+            or Version(previous["version"]) < Version(release_version)
+        ):
+            version_commits[commit] = {"version": release_version, "type": "tag"}
+    return pkg_content
 
 
 # ------------------------------------------------------------------------------
@@ -404,6 +425,12 @@ def main():
         for pkg_name, pkg_class in pkg_classes.items()
     }
 
+    # Add any release versions that don't already exist in the package files.
+    for pkg_name, pkg_class in pkg_classes.items():
+        all_content[pkg_name] = add_missing_releases(
+            pkg_name, pkg_class, all_content[pkg_name], all_version_commits[pkg_name]
+        )
+
     # Separate the hermes commit; everything else is a dependency
     hermes_commit = commits.pop("hermes-3")
 
@@ -416,8 +443,7 @@ def main():
                 f"Commit [{commit}] of [{dep_name}] already registered as version [{pkg_version_commits[commit]['version']}]."
             )
         else:
-            all_content[dep_name], dep_version = add_package_version(
-                pkg_classes[dep_name],
+            all_content[dep_name], dep_version = insert_package_rc_version(
                 all_content[dep_name],
                 pkg_version_commits,
                 commit,
@@ -434,8 +460,7 @@ def main():
         )
         # If there are new dependencies, we need a new hermes version at the current commit
         print(f"Adding new hermes-3 version at commit [{hermes_commit}]")
-        all_content["hermes-3"], new_hermes_version = add_package_version(
-            pkg_classes["hermes-3"],
+        all_content["hermes-3"], hermes_version = insert_package_rc_version(
             all_content["hermes-3"],
             existing_hermes_versions,
             hermes_commit,
@@ -443,7 +468,7 @@ def main():
 
         for dep_name, dep_version in new_dependency_versions.items():
             all_content["hermes-3"] = add_hermes_dependency(
-                all_content["hermes-3"], new_hermes_version, dep_name, dep_version
+                all_content["hermes-3"], hermes_version, dep_name, dep_version
             )
 
     # Write out all the modified package.py files
