@@ -35,6 +35,7 @@ class Boutpp(CMakePackage):
     # Format (don't change the line below, as it is used in CI to update package versions!)
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("5.2.1rc20260727", commit="2384555b6ad9763cddc3e99a99ed4c4c1037faa2")
+    version("5.2.1rc20261023", commit="8177bdb76d9e90b245f87f78965f88080ead92c9")
 
     # Patches
     patch("fix_thirdparty_cmake_v5.0.0.patch", when="@5.0.0")
