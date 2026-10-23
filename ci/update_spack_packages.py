@@ -1,5 +1,4 @@
 import argparse
-from collections import defaultdict
 from contextlib import contextmanager
 from dataclasses import dataclass
 from datetime import datetime
@@ -24,17 +23,44 @@ _repo_ref_cache = {}
 @dataclass
 class GitRefMapper:
     """
-    Bi-directional map between git references (branches/tags) and commit hashes.
+    A data class that maps git references to commit hashes, storing an additional, separate mapping
+    of tag->commit.
     """
 
     ref_to_commit: dict[str, str]
-    commit_to_refs: dict[str, list[str]]
+    tag_to_commit: dict[str, str]
 
-    def commit_from_ref(self, ref):
-        return self.ref_to_commit.get(ref, None)
+    @classmethod
+    def from_show_ref(cls, show_ref_output):
+        """Build mappings from `git show-ref --dereference` output."""
+        ref_to_commit = {}
+        tag_refs = {}
+        peeled_tag_refs = {}
 
-    def refs_from_commit(self, commit):
-        return self.commit_to_refs.get(commit, [])
+        # Put heads straight in to the forward map (ref->commit) but discriminate between tags and 'peeled' tags
+        for line in show_ref_output.splitlines():
+            commit, ref = line.split()
+
+            if ref.startswith("refs/heads/"):
+                ref_to_commit[ref.removeprefix("refs/heads/")] = commit
+            elif ref.startswith("refs/tags/"):
+                short_ref = ref.removeprefix("refs/tags/")
+                if short_ref.endswith("^{}"):
+                    peeled_tag_refs[short_ref.removesuffix("^{}")] = commit
+                else:
+                    tag_refs[short_ref] = commit
+
+        # Add tag refs to the forward map, preferring peeled tags where they exist
+        for tag_name, commit in tag_refs.items():
+            ref_to_commit[tag_name] = peeled_tag_refs.get(tag_name, commit)
+        for tag_name, commit in peeled_tag_refs.items():
+            ref_to_commit[tag_name] = commit
+
+        # Generate git ref->commit and tag->commit maps.
+        return cls(
+            ref_to_commit=ref_to_commit,
+            tag_to_commit={tag: ref_to_commit[tag] for tag in tag_refs},
+        )
 
 
 # ==============================================================================
@@ -83,7 +109,11 @@ def add_package_version(pkg_class, pkg_content, existing_versions, new_version_c
     # Does this commit correspond to a release version?
     # i.e. Does this commit have a git tag, and is that tag 'version-like'?
     is_release = False
-    tags = get_git_ref_map(pkg_class).refs_from_commit(new_version_commit)
+    tags = [
+        tag
+        for tag, commit in get_git_ref_map(pkg_class).tag_to_commit.items()
+        if commit == new_version_commit
+    ]
     if tags:
         release_tags = [t for t in tags if is_release_tag(t)]
         if release_tags:
@@ -131,7 +161,7 @@ def extract_version_commits(pkg_name, pkg_class):
                         f"v{str(version)}",
                     ]
                     for ref in candidate_refs:
-                        commit = get_git_ref_map(pkg_class).commit_from_ref(ref)
+                        commit = get_git_ref_map(pkg_class).ref_to_commit.get(ref)
                         if commit is not None:
                             break
                 if commit is not None:
@@ -169,47 +199,23 @@ def get_git_ref_map(pkg_class):
         cache_dir.parent.mkdir(parents=True, exist_ok=True)
         fetcher.bare_clone(str(cache_dir))
     with working_directory(cache_dir):
-        output = fetcher.git(
+        # Run fetch again to ensure refs in cached repo are up to date
+        fetcher.git(
+            "fetch",
+            "--prune",
+            "origin",
+            "+refs/heads/*:refs/heads/*",
+            "+refs/tags/*:refs/tags/*",
+        )
+        show_ref_output = fetcher.git(
             "show-ref",
+            "--dereference",
             "--tags",
             "--heads",
             output=str,
         )
 
-    # Parse the output of `git show-ref`
-    ref_to_commit = {}
-    tag_refs = {}
-    peeled_tag_refs = {}
-
-    # Put heads straight in to the forward map (ref->commit) but discriminate between tags and 'peeled' tags
-    for line in output.splitlines():
-        commit, ref = line.split()
-
-        if ref.startswith("refs/heads/"):
-            ref_to_commit[ref.removeprefix("refs/heads/")] = commit
-        elif ref.startswith("refs/tags/"):
-            short_ref = ref.removeprefix("refs/tags/")
-            if short_ref.endswith("^{}"):
-                peeled_tag_refs[short_ref.removesuffix("^{}")] = commit
-            else:
-                tag_refs[short_ref] = commit
-
-    # Add tag refs to the forward map, preferring peeled tags where they exist
-    for tag_name, commit in tag_refs.items():
-        ref_to_commit[tag_name] = peeled_tag_refs.get(tag_name, commit)
-    for tag_name, commit in peeled_tag_refs.items():
-        ref_to_commit[tag_name] = commit
-
-    # Create the reverse map
-    commit_to_refs = defaultdict(list)
-    for ref_name, commit in ref_to_commit.items():
-        commit_to_refs[commit].append(ref_name)
-
-    # Create the two-way mapper
-    result = GitRefMapper(
-        ref_to_commit=dict(ref_to_commit),
-        commit_to_refs=dict(commit_to_refs),
-    )
+    result = GitRefMapper.from_show_ref(show_ref_output)
 
     # Cache the mapper
     _repo_ref_cache[pkg_class.git] = result
