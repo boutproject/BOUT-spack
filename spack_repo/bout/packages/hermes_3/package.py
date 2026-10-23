@@ -45,7 +45,16 @@ class Hermes3(CMakePackage):
     version("master", branch="master", submodules=True, preferred=True)
 
     # Release versions
-    tagged_versions = ["1.2.0", "1.2.1", "1.3.0", "1.3.1", "1.4.0", "1.4.1"]
+    tagged_versions = [
+        "1.2.0",
+        "1.2.1",
+        "1.3.0",
+        "1.3.1",
+        "1.4.0",
+        "1.4.1",
+        "1.5.0",
+        "1.5.1",
+    ]
     for v in tagged_versions:
         version(v, tag=f"v{v}", submodules=True)
 
@@ -58,6 +67,7 @@ class Hermes3(CMakePackage):
     version("1.4.2rc20260212", commit="1ee1c190742ed36470776d0bcf188aad33754bd0")
     version("1.4.2rc20260615", commit="c8aa7969ee288862a5af3201db61d932ff64b377")
     version("1.4.2rc20260727", commit="a1c3ba381f87686d5a6ee8bf52226886ece6bb1d")
+    version("1.5.2rc20261023", commit="0caba57942a0f0d9996b6806a13d8fbbc0d0fc1f")
 
     variant(
         "limiter",
@@ -88,11 +98,13 @@ class Hermes3(CMakePackage):
     depends_on("mpi", type=("build", "link", "run"))
     depends_on("boutpp", type=("build", "link"))
     depends_on("boutpp@5.2.1rc20260727:", when="@1.4.2rc20260727:")
+    depends_on("boutpp@5.2.1rc20261023:", when="@1.5.2rc20261023:")
 
     depends_on("netcdf-cxx4", type=("build", "link"))
     # Need boutdata for boutupgrader script, even when not installing xhermes
     depends_on("py-boutdata@0.3.0:", type=("run"))
     depends_on("py-boutdata@0.4.1rc20260727:", when="@1.4.2rc20260727:")
+    depends_on("py-boutdata@0.4.1rc20261023:", when="@1.5.2rc20261023:")
 
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
