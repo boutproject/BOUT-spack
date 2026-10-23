@@ -333,18 +333,26 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
 # ------------------------------------------------------------------------------
 def insert_package_release_version(pkg_content, tag):
     """
-    Insert a new release version into tagged_versions = [...]
+    Insert a new release version.
+    (Add to the 'tagged_versions' or 'oldstyle_tagged_versions' lists in each package, as appropriate).
     """
 
     release_version = tag.removeprefix("v")
 
-    # Locate tagged_versions list
+    # The tagged_versions loop assumes a leading 'v'; unprefixed tags use the oldstyle list.
+    list_name = "tagged_versions" if tag.startswith("v") else "oldstyle_tagged_versions"
+
+    # Locate the appropriate tagged_versions list
     pattern = re.compile(
-        r"(^[ \t]*tagged_versions[ \t]*=[ \t]*\[)(.*?)(^[ \t]*\])",
+        rf"(^[ \t]*{list_name}[ \t]*=[ \t]*\[)(.*?)(\])",
         re.MULTILINE | re.DOTALL,
     )
     match = pattern.search(pkg_content)
     if not match:
+        if list_name == "oldstyle_tagged_versions":
+            raise RuntimeError(
+                "Release version string wasn't v-prefixed, and no alternative formats are supported in the package file."
+            )
         raise RuntimeError("Could not find tagged_versions list")
     list_body = match.group(2)
 
@@ -358,7 +366,7 @@ def insert_package_release_version(pkg_content, tag):
     versions.sort(key=Version)
 
     new_body = "".join(f'\n        "{v}",' for v in versions)
-    replacement = f"{match.group(1)}{new_body}\n    {match.group(3)}"
+    replacement = f"{match.group(1)}{new_body}\n    ]"
 
     return pkg_content[: match.start()] + replacement + pkg_content[
         match.end() :
