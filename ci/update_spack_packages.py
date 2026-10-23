@@ -37,7 +37,7 @@ class GitRefMapper:
         tag_refs = {}
         peeled_tag_refs = {}
 
-        # Put heads straight in to the forward map (ref->commit) but discriminate between tags and 'peeled' tags
+        # Put heads straight into the (ref->commit) map, but discriminate between tags and 'peeled' tags
         for line in show_ref_output.splitlines():
             commit, ref = line.split()
 
@@ -50,13 +50,14 @@ class GitRefMapper:
                 else:
                     tag_refs[short_ref] = commit
 
-        # Add tag refs to the forward map, preferring peeled tags where they exist
+        # Add tag refs to the map
         for tag_name, commit in tag_refs.items():
-            ref_to_commit[tag_name] = peeled_tag_refs.get(tag_name, commit)
+            ref_to_commit[tag_name] = commit
+        # Add peeled tags to the map (overwrites regular tag refs)
         for tag_name, commit in peeled_tag_refs.items():
             ref_to_commit[tag_name] = commit
 
-        # Generate git ref->commit and tag->commit maps.
+        # Return git ref->commit and tag->commit maps.
         return cls(
             ref_to_commit=ref_to_commit,
             tag_to_commit={tag: ref_to_commit[tag] for tag in tag_refs},
