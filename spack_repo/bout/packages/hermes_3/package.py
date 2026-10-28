@@ -54,6 +54,7 @@ class Hermes3(CMakePackage):
         "1.4.1",
         "1.5.0",
         "1.5.1",
+        "1.5.2",
     ]
     for v in tagged_versions:
         version(v, tag=f"v{v}", submodules=True)
