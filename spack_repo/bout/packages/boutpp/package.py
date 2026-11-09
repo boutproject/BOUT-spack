@@ -132,6 +132,9 @@ class Boutpp(CMakePackage):
     depends_on("petsc@3.7:3.23+mpi", type=("build", "link"), when="+petsc")
     # BOUT v5.0.0 won't build with PETSc v3.18 onwards
     conflicts("petsc@3.18:", when="+petsc@:5.0.0")
+    # When built with slate, strumpack requires MPI to be initialised with MPI_THREAD_MULTIPLE.
+    # Since BOUT doesn't do that, ensure strumpack builds without slate, for now.
+    conflicts("^strumpack+slate", msg="When built with slate, STRUMPACK requires MPI be initialised with MPI_THREAD_MULTIPLE, which BOUT++ does not support.")
 
     def cmake_args(self):
         # Definitions controlled by variants
