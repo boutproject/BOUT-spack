@@ -1,0 +1,6 @@
+# Dependencies used for development.
+[dependency-groups]
+dev = [
+    "prek==0.3.10",
+    "ruff==0.15.1",
+]
