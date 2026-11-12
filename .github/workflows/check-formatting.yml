@@ -1,0 +1,23 @@
+name: Formatting
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.13.7"
+          python-version: "3.12"
+
+      - name: Run Ruff formatting hook
+        run: uv run --project dev --locked --only-dev prek run ruff-format --all-files --show-diff-on-failure
