@@ -47,10 +47,11 @@ class PyXbout(PythonPackage):
     #  - If the next release version isn't known - increment the last release version by 0.0.1
     # Format (don't change the line below, as it is used in CI to update package versions!)
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
-    version("0.4.0rc20250925", commit="9c634a4492cd480f9883151b4f89b9d22f607727") # netcdf4=>h5netcdf
-    version("0.4.0rc20260211", commit="afac4967c662e1c75b549bf585e15a6330548d8c") # h5py
+    version(
+        "0.4.0rc20250925", commit="9c634a4492cd480f9883151b4f89b9d22f607727"
+    )  # netcdf4=>h5netcdf
+    version("0.4.0rc20260211", commit="afac4967c662e1c75b549bf585e15a6330548d8c")  # h5py
     version("0.4.1rc20260727", commit="028bea942008d7248a314c62994ec324fc435522")
-
 
     # Point at latest master/main branch
     version("master", branch="master")
@@ -65,7 +66,7 @@ class PyXbout(PythonPackage):
 
     # Runtime dependencies
     depends_on("py-animatplot-ng@0.4.2:", type=("build", "run"))
-    #depends_on("py-boutdata@0.1.4:", type=("build", "run"))
+    # depends_on("py-boutdata@0.1.4:", type=("build", "run"))
     depends_on("py-dask@2.10.0:+array", type=("build", "run"))
     depends_on("py-gelidum@0.5.3:", type=("build", "run"))
     depends_on("py-h5py", type=("build", "run"), when="@0.4.0rc20260211:")
@@ -77,7 +78,9 @@ class PyXbout(PythonPackage):
     depends_on("py-xarray@2023.01.0:", type=("build", "run"))
 
     # Avoid LLVM dependency through pandas performance variant
-    conflicts("py-pandas+performance", msg="pandas performance variant pulls in LLVM via numba")
+    conflicts(
+        "py-pandas+performance", msg="pandas performance variant pulls in LLVM via numba"
+    )
 
     def config_settings(self, spec, prefix):
         settings = {}

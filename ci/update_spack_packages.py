@@ -98,7 +98,9 @@ def add_hermes_dependency(h3_content, h3_version, dep_name, dep_version):
     # Specifies that hermes versions [h3_version] and onwards require [dep_name]@[dep_version] or higher
     dep_variant = _h3_variant_triggered_dependencies.get(dep_name, "")
     variant_str = f" +{dep_variant}" if dep_variant else ""
-    new_dep_line = f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")'
+    new_dep_line = (
+        f'    depends_on("{dep_name}@{dep_version}:", when="@{h3_version}:{variant_str}")'
+    )
     h3_content = h3_content[:insert_pos] + "\n" + new_dep_line + h3_content[insert_pos:]
     return h3_content
 
@@ -229,9 +231,7 @@ def add_missing_releases(pkg_name, pkg_class, pkg_content, version_commits):
         if release_version not in existing_releases:
             pkg_content, _ = insert_package_release_version(pkg_content, tag)
             existing_releases.add(release_version)
-            print(
-                f"ADDED release [{release_version}] of [{pkg_name}] from tag [{tag}]."
-            )
+            print(f"ADDED release [{release_version}] of [{pkg_name}] from tag [{tag}].")
         # Add the release commit to version_commits
         # Overwrite an existing entry if it's not a tag or if the discoverd release is newer.
         commit = tags[tag]
@@ -321,9 +321,7 @@ def insert_package_rc_version(pkg_content, existing_versions, new_version_commit
 
     # Edge case where the new line is being inserted at EOF and the file has no trailing newline
     line_prefix = (
-        "\n"
-        if insert_pos == len(pkg_content) and not pkg_content.endswith("\n")
-        else ""
+        "\n" if insert_pos == len(pkg_content) and not pkg_content.endswith("\n") else ""
     )
 
     return pkg_content[:insert_pos] + line_prefix + version_line + "\n" + pkg_content[
@@ -460,18 +458,14 @@ def main():
             # Newly discovered releases have already been added to the package files, but
             # dependencies may still need to be updated.
             if commit not in version_commits_excluding_new_releases[dep_name]:
-                new_dependency_versions[dep_name] = pkg_version_commits[commit][
-                    "version"
-                ]
+                new_dependency_versions[dep_name] = pkg_version_commits[commit]["version"]
         else:
             all_content[dep_name], dep_version = insert_package_rc_version(
                 all_content[dep_name],
                 pkg_version_commits,
                 commit,
             )
-            print(
-                f"ADDED commit [{commit}] as version [{dep_version}] of [{dep_name}]."
-            )
+            print(f"ADDED commit [{commit}] as version [{dep_version}] of [{dep_name}].")
             new_dependency_versions[dep_name] = dep_version
 
     # Add depends_on(...) statements to the hermes package file if necessary

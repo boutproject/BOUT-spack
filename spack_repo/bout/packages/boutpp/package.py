@@ -6,7 +6,15 @@
 # ----------------------------------------------------------------------------
 
 from spack_repo.builtin.build_systems.cmake import CMakePackage
-from spack.package import conflicts, depends_on, license, maintainers, patch, variant, version
+from spack.package import (
+    conflicts,
+    depends_on,
+    license,
+    maintainers,
+    patch,
+    variant,
+    version,
+)
 
 
 class Boutpp(CMakePackage):
@@ -89,7 +97,9 @@ class Boutpp(CMakePackage):
     variant("track", default=True, description="Enable field name tracking.")
     variant("umpire", default=False, description="Builds with Umpire support.")
     variant("uuid", default=True, description="Use system UUID generator")
-    variant("updatesubmodules", default=False, description="Update submodules during build")
+    variant(
+        "updatesubmodules", default=False, description="Update submodules during build"
+    )
     # Fixed dependencies
     depends_on("c", type="build")
     depends_on("cxx", type="build")
@@ -115,9 +125,7 @@ class Boutpp(CMakePackage):
     simple_dep_versions = {"sundials": "2.6:6.7.0"}
     for dep in simple_deps:
         dep_spec = (
-            dep
-            if not dep in simple_dep_versions
-            else f"{dep}@{simple_dep_versions[dep]}"
+            dep if not dep in simple_dep_versions else f"{dep}@{simple_dep_versions[dep]}"
         )
         depends_on(dep_spec, type=("build", "link"), when=f"+{dep}")
 
@@ -134,7 +142,10 @@ class Boutpp(CMakePackage):
     conflicts("petsc@3.18:", when="+petsc@:5.0.0")
     # When built with slate, strumpack requires MPI to be initialised with MPI_THREAD_MULTIPLE.
     # Since BOUT doesn't do that, ensure strumpack builds without slate, for now.
-    conflicts("^strumpack+slate", msg="When built with slate, STRUMPACK requires MPI be initialised with MPI_THREAD_MULTIPLE, which BOUT++ does not support.")
+    conflicts(
+        "^strumpack+slate",
+        msg="When built with slate, STRUMPACK requires MPI be initialised with MPI_THREAD_MULTIPLE, which BOUT++ does not support.",
+    )
 
     def cmake_args(self):
         # Definitions controlled by variants
@@ -177,9 +188,7 @@ class Boutpp(CMakePackage):
 
         # Build tests unless variant buildtests=none
         variant_args.append(
-            self.define(
-                "BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none"
-            )
+            self.define("BOUT_TESTS", self.spec.variants["buildtests"].value[0] != "none")
         )
         # Build ALL tests if variant buildtests=all
         variant_args.append(
@@ -198,7 +207,7 @@ class Boutpp(CMakePackage):
             # Always build with MPI
             self.define("BOUT_ENABLE_MPI", True),
             # Avoid any confusion between conda and spack
-            self.define("BOUT_IGNORE_CONDA_ENV",True),
+            self.define("BOUT_IGNORE_CONDA_ENV", True),
             # Ensure bout submodules are up to date before building
             self.define("BOUT_UPDATE_GIT_SUBMODULE", True),
             # Always build with PVODE
