@@ -1,5 +1,5 @@
 ---
-name: Update Hermes-3 dependencies
+name: Sync package files with Hermes-3 repo
 # Inspects 'ci/requirements.txt' and the BOUT-dev submodule commit in the Hermes-3 repo to
 # check whether new package versions and dependencies need to be added.
 # Files a PR to make the necessary changes.
@@ -13,7 +13,7 @@ permissions:
   pull-requests: write
 
 jobs:
-  update-python-test-dependencies:
+  update-package-files:
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/boutproject/bout-spack-ci:0.1.0
