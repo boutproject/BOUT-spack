@@ -2,7 +2,20 @@ version = 1
 revision = 5
 requires-python = ">=3.10"
 
-[manifest.dependency-groups]
+[[package]]
+name = "bout-spack-dev"
+version = "0.0.0"
+source = { virtual = "." }
+
+[package.dev-dependencies]
+dev = [
+    { name = "prek" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+
+[package.metadata.requires-dev]
 dev = [
     { name = "prek", specifier = "==0.3.10" },
     { name = "ruff", specifier = "==0.15.1" },
