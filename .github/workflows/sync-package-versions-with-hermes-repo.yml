@@ -20,6 +20,7 @@ jobs:
     env:
       HERMES_DIR: .tmp/hermes
       COMMITS_JSON: .tmp/commits.json
+      PYTHONPATH: ${{ github.workspace }}/ci
 
     steps:
 

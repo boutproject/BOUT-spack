@@ -8,10 +8,11 @@ import os
 from pathlib import Path
 import re
 import spack.paths
-from spack.repo import Repo, PATH
 from spack.version import Version
 from spack.fetch_strategy import GitFetchStrategy
 from spack.version import infinity_versions
+
+from package_utils import get_pkg_classes, is_release_tag, read_pkg_files
 
 # script/global scope storage
 _git_fetcher_cache = {}
@@ -246,19 +247,6 @@ def add_missing_releases(pkg_name, pkg_class, pkg_content, version_commits):
 
 
 # ------------------------------------------------------------------------------
-def get_pkg_classes(pkg_names, namespace="bout"):
-    """
-    Read classes from the package repo.
-    """
-    repo_path = Path(__file__).resolve().parent.parent / "spack_repo" / namespace
-    local_repo = Repo(
-        str(repo_path),
-        cache=PATH.repos[0]._cache,
-    )
-    return {pkg_name: local_repo.get_pkg_class(pkg_name) for pkg_name in pkg_names}
-
-
-# ------------------------------------------------------------------------------
 def get_rc_version_tag(existing_versions):
     """
     Given a dict of existing versions, return the next rc version tag.
@@ -370,32 +358,6 @@ def insert_package_release_version(pkg_content, tag):
     return pkg_content[: match.start()] + replacement + pkg_content[
         match.end() :
     ], release_version
-
-
-# ------------------------------------------------------------------------------
-def is_release_tag(tag):
-    """
-    Check if a git tag has the form of a release version (vX.Y.Z or X.Y.Z, where X, Y, and Z are integers).
-    """
-    pattern = r"^v?\d+\.\d+\.\d+$"
-    return re.match(pattern, tag) is not None
-
-
-# ------------------------------------------------------------------------------
-def read_pkg_files(pkg_classes):
-    """
-    Read package.py for each package in the <pkg_classes> dict and return the contents in another dict.
-    """
-    pkgs_content = {}
-    for pkg_name, pkg_class in pkg_classes.items():
-        pkgfile = Path(pkg_class.package_dir) / "package.py"
-        if not pkgfile.exists():
-            print(
-                f"WARNING: Package file for {pkg_name} not found at [{pkgfile}]!? Skipping."
-            )
-            continue
-        pkgs_content[pkg_name] = pkgfile.read_text()
-    return pkgs_content
 
 
 # ------------------------------------------------------------------------------
