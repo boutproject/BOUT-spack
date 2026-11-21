@@ -37,6 +37,7 @@ class PyBoutdata(PythonPackage):
     #   version("<next_release_version>rc<date_in_YYYYMMDD>", commit="<git_hash>")
     version("0.4.1rc20260727", commit="894e7f2de3ac1a40dd0ea5c865399edcf9ae5f19")
     version("0.4.1rc20261023", commit="83c2d858ac9bb2db04767fc454f6cf4fadb5127d")
+    version("0.4.1rc20261121", commit="0f9e58cc98c028ed4bf433295ad36871e90f3c43")
 
     # Compatible Python versions
     depends_on("python@3.9:", type=("build", "run"))
