@@ -20,6 +20,7 @@ jobs:
     env:
       HERMES_DIR: .tmp/hermes
       COMMITS_JSON: .tmp/commits.json
+      PYTHONPATH: ${{ github.workspace }}/ci
 
     steps:
 
@@ -54,6 +55,11 @@ jobs:
         run: |
           . "$SPACK_ROOT/share/spack/setup-env.sh"
           spack-python ci/update_spack_packages.py --commits_file "$COMMITS_JSON"
+
+      - name: Remove old release candidate versions
+        run: |
+          . "$SPACK_ROOT/share/spack/setup-env.sh"
+          spack-python ci/remove-old-rc_versions.py --commits_file "$COMMITS_JSON"
 
       # Cleanup temporary files
       - name: Clean up temporary files
