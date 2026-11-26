@@ -123,7 +123,7 @@ class Boutpp(CMakePackage):
         "sundials",
         "umpire",
     ]
-    simple_dep_versions = {"sundials": "2.6:6.7.0"}
+    simple_dep_versions = {"sundials": "5.0:7.2.1"}
     for dep in simple_deps:
         dep_spec = (
             dep if not dep in simple_dep_versions else f"{dep}@{simple_dep_versions[dep]}"
