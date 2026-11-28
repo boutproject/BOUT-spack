@@ -70,6 +70,7 @@ class Hermes3(CMakePackage):
     version("1.4.2rc20260727", commit="a1c3ba381f87686d5a6ee8bf52226886ece6bb1d")
     version("1.5.2rc20261023", commit="0caba57942a0f0d9996b6806a13d8fbbc0d0fc1f")
     version("1.5.3rc20261113", commit="382ab0b56fe02bfd3eecbf3f73ca8a10166961b8")
+    version("1.5.3rc20261128", commit="2109af73cba1c704d979627fee3c705e62d483b0")
 
     variant(
         "limiter",
@@ -108,6 +109,7 @@ class Hermes3(CMakePackage):
     depends_on("py-boutdata@0.3.0:", type=("run"))
     depends_on("py-boutdata@0.4.1rc20260727:", when="@1.4.2rc20260727:")
     depends_on("py-boutdata@0.4.1rc20261023:", when="@1.5.2rc20261023:")
+    depends_on("py-boutdata@0.4.1rc20261128:", when="@1.5.3rc20261128:")
 
     # Variant-controlled dependencies
     depends_on("py-xhermes", when="+xhermes", type=("run"))
